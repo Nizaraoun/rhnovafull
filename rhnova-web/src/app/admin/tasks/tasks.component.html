@@ -1,0 +1,331 @@
+
+<div class="tasks-container">
+  <div class="tasks-header">
+    <h1 class="page-title">Task Management</h1>
+    <button class="btn btn-primary" (click)="openCreateTaskModal()" [disabled]="loading">
+      <i class="icon-plus"></i>
+      Create Task
+    </button>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <span>Loading tasks...</span>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    <i class="icon-error"></i>
+    {{ error }}
+    <button (click)="loadTasks()" class="btn btn-sm btn-secondary">Retry</button>
+  </div>
+
+  <!-- Task Filters -->
+  <div class="task-filters">
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="selectedStatus" (change)="filterTasks()">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Priority:</label>
+      <select [(ngModel)]="selectedPriority" (change)="filterTasks()">
+        <option value="">All</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+    <div class="search-group">
+      <input 
+        type="text" 
+        placeholder="Search tasks..." 
+        [(ngModel)]="searchTerm"
+        (input)="filterTasks()"
+        class="search-input"
+      />
+    </div>
+  </div>
+
+  <!-- Task Statistics -->
+  <div class="task-stats">
+    <div class="stat-card">
+      <div class="stat-number">{{ getTaskCount('pending') }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ getTaskCount('in-progress') }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ getTaskCount('completed') }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ getTotalTasks() }}</div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+
+  <!-- Task Board -->
+  <div class="task-board">
+    <div class="task-column" *ngFor="let status of statuses">
+      <div class="column-header">
+        <h3>{{ getStatusTitle(status) }}</h3>
+        <span class="task-count">{{ getTasksByStatus(status).length }}</span>
+      </div>
+      <div class="task-list">
+        <div 
+          class="task-card" 
+          *ngFor="let task of getTasksByStatus(status)"
+          [class.high-priority]="task.priority === 'high'"
+          [class.medium-priority]="task.priority === 'medium'"
+          [class.low-priority]="task.priority === 'low'"
+        >
+          <div class="task-header">
+            <h4 class="task-title">{{ task.title }}</h4>
+            <div class="task-priority" [class]="'priority-' + task.priority">
+              {{ task.priority }}
+            </div>
+          </div>
+          <p class="task-description">{{ task.description }}</p>          <div class="task-meta">
+            <div class="task-assignee">
+              <i class="icon-user"></i>
+              {{ task.assignee }}
+            </div>
+            <div class="task-due-date">
+              <i class="icon-calendar"></i>
+              {{ task.dueDate | date:'short' }}
+            </div>
+            <div class="task-progression" *ngIf="task.progression !== undefined">
+              <i class="icon-progress"></i>
+              Progress: {{ task.progression }}%
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="task.progression"></div>
+              </div>
+            </div>
+          </div>
+          <div class="task-actions">
+            <select 
+              [value]="task.status" 
+              (change)="updateTaskStatus(task.id!, $any($event.target).value)"
+              class="status-select"
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <button class="btn btn-sm btn-secondary" (click)="editTask(task)">
+              Edit
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteTask(task.id!)" [disabled]="loading">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateTaskModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Create New Task</h2>
+      <button class="btn-close" (click)="closeCreateTaskModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="createTask()">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input 
+            type="text" 
+            id="title" 
+            [(ngModel)]="newTask.title" 
+            name="title"
+            required 
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea 
+            id="description" 
+            [(ngModel)]="newTask.description" 
+            name="description"
+            class="form-control"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="priority">Priority:</label>
+            <select 
+              id="priority" 
+              [(ngModel)]="newTask.priority" 
+              name="priority"
+              class="form-control"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="assignee">Assignee:</label>
+            <input 
+              type="text" 
+              id="assignee" 
+              [(ngModel)]="newTask.assignee" 
+              name="assignee"
+              class="form-control"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="dueDate">Due Date:</label>
+          <input 
+            type="datetime-local" 
+            id="dueDate" 
+            [(ngModel)]="newTask.dueDate" 
+            name="dueDate"
+            class="form-control"
+          />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateTaskModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            Create Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Task</h2>
+      <button class="btn-close" (click)="closeEditModal()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="editingTask">
+      <form (ngSubmit)="updateTask()">
+        <div class="form-group">
+          <label for="editTitle">Title:</label>
+          <input 
+            type="text" 
+            id="editTitle" 
+            [(ngModel)]="editingTask.title" 
+            name="editTitle"
+            required 
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <label for="editDescription">Description:</label>
+          <textarea 
+            id="editDescription" 
+            [(ngModel)]="editingTask.description" 
+            name="editDescription"
+            class="form-control"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editPriority">Priority:</label>
+            <select 
+              id="editPriority" 
+              [(ngModel)]="editingTask.priority" 
+              name="editPriority"
+              class="form-control"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editStatus">Status:</label>
+            <select 
+              id="editStatus" 
+              [(ngModel)]="editingTask.status" 
+              name="editStatus"
+              class="form-control"
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editAssignee">Assignee:</label>
+            <input 
+              type="text" 
+              id="editAssignee" 
+              [(ngModel)]="editingTask.assignee" 
+              name="editAssignee"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="editProgression">Progress (%):</label>
+            <input 
+              type="number" 
+              id="editProgression" 
+              [(ngModel)]="editingTask.progression" 
+              name="editProgression"
+              min="0"
+              max="100"
+              class="form-control"
+            />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editDueDate">Due Date:</label>
+            <input 
+              type="datetime-local" 
+              id="editDueDate" 
+              [(ngModel)]="editingTask.dueDate" 
+              name="editDueDate"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="editEvaluation">Evaluation (1-5):</label>
+            <input 
+              type="number" 
+              id="editEvaluation" 
+              [(ngModel)]="editingTask.evaluation" 
+              name="editEvaluation"
+              min="0"
+              max="5"
+              class="form-control"
+            />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            Update Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

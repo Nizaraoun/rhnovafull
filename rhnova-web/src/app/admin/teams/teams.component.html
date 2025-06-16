@@ -1,0 +1,266 @@
+<div class="teams-container">
+  <div class="header">
+    <h1>Gestion des Équipes</h1>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i>
+      Nouvelle équipe
+    </button>
+  </div>
+
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Rechercher par nom d'équipe ou département..."
+        [(ngModel)]="searchTerm"
+        (input)="filterTeams()"
+        class="search-input">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+  </div>
+
+  <div class="teams-grid" *ngIf="!isLoading">
+    <div *ngIf="filteredTeams.length === 0" class="no-data">
+      <i class="fas fa-users"></i>
+      <p>Aucune équipe trouvée</p>
+    </div>
+
+    <div
+      *ngFor="let team of filteredTeams"
+      class="team-card">
+      <div class="team-header">
+        <div class="team-info">
+          <h3>{{ team.nom }}</h3>
+          <p class="department" *ngIf="team.departement">{{ team.departement }}</p>
+          <p class="members-count">
+            <i class="fas fa-users"></i>
+           membre(s)
+          </p>
+        </div>
+        <div class="team-budget" *ngIf="team.budget">
+          <span class="budget-label">Budget</span>
+          <span class="budget-amount">{{ team.budget | currency:'EUR':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <div class="team-description" *ngIf="team.description">
+        <p>{{ team.description }}</p>
+      </div>
+
+      <div class="team-objectives" *ngIf="team.objectifs">
+        <h4>Objectifs</h4>
+        <p>{{ team.objectifs }}</p>
+      </div>      <div class="team-members" *ngIf="team.membreIds && team.membreIds.length > 0">
+        <h4>Membres de l'équipe</h4>
+        <div class="members-list">
+          <div
+            *ngFor="let memberId of team.membreIds"
+            class="member-badge">
+            {{ getMemberName(memberId) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="team-manager" *ngIf="team.managerId">
+        <h4>Manager</h4>
+        <p>{{ getManagerName(team.managerId) }}</p>
+      </div>      <div class="team-actions">
+        <button
+          class="btn btn-outline-primary btn-sm"
+          (click)="openEditModal(team)">
+          <i class="fas fa-edit"></i>
+          Modifier
+        </button>
+        <button
+          class="btn btn-outline-success btn-sm"
+          (click)="openMemberModal(team)">
+          <i class="fas fa-users"></i>
+          Gérer membres
+        </button>
+        <button
+          class="btn btn-outline-danger btn-sm"
+          (click)="deleteTeam(team)">
+          <i class="fas fa-trash"></i>
+          Supprimer
+        </button>
+        <button class="btn btn-outline-info btn-sm">
+          <i class="fas fa-tasks"></i>
+          Tâches
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Chargement des équipes...</p>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Modifier l\'équipe' : 'Nouvelle équipe' }}</h2>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="teamForm" (ngSubmit)="onSubmit()">        <div class="form-group">
+          <label for="nom">Nom de l'équipe *</label>
+          <input
+            type="text"
+            id="nom"
+            formControlName="nom"
+            class="form-input"
+            [class.error]="teamForm.get('nom')?.invalid && teamForm.get('nom')?.touched">
+          <div class="error-message" *ngIf="teamForm.get('nom')?.invalid && teamForm.get('nom')?.touched">
+            Le nom de l'équipe est requis (minimum 2 caractères)
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="departement">Département *</label>
+            <select id="departement" formControlName="departement" class="form-select">
+              <option value="">Sélectionner un département</option>
+              <option value="IT">Informatique</option>
+              <option value="RH">Ressources Humaines</option>
+              <option value="FINANCE">Finance</option>
+              <option value="MARKETING">Marketing</option>
+              <option value="VENTES">Ventes</option>
+              <option value="PRODUCTION">Production</option>
+              <option value="LOGISTIQUE">Logistique</option>
+            </select>
+            <div class="error-message" *ngIf="teamForm.get('departement')?.invalid && teamForm.get('departement')?.touched">
+              Le département est requis
+            </div>
+          </div>          <div class="form-group">
+            <label for="managerId">Manager *</label>
+            <select id="managerId" formControlName="managerId" class="form-select">
+              <option value="">Sélectionner un manager</option>
+              <option *ngFor="let user of allUsers" [value]="user.id">
+                {{ user.name }} ({{ user.email }})
+              </option>
+            </select>
+            <div class="error-message" *ngIf="teamForm.get('managerId')?.invalid && teamForm.get('managerId')?.touched">
+              Le manager est requis
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-textarea"
+            rows="3"
+            placeholder="Description de l'équipe..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="objectifs">Objectifs</label>
+          <textarea
+            id="objectifs"
+            formControlName="objectifs"
+            class="form-textarea"
+            rows="3"
+            placeholder="Objectifs de l'équipe..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="budget">Budget (€)</label>
+          <input
+            type="number"
+            id="budget"
+            formControlName="budget"
+            class="form-input"
+            min="0"
+            step="1000"
+            placeholder="Budget en euros">
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="closeModal()">
+        Annuler
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="teamForm.invalid"
+        (click)="onSubmit()">
+        {{ isEditing ? 'Modifier' : 'Créer' }}
+      </button>    </div>
+  </div>
+</div>
+
+<!-- Member Management Modal -->
+<div class="modal-overlay" *ngIf="showMemberModal" (click)="closeMemberModal()">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Gérer les membres - {{ selectedTeam?.nom }}</h2>
+      <button class="btn-close" (click)="closeMemberModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="member-management">
+        <div class="current-members">
+          <h3>Membres actuels ({{ selectedTeamMembers.length }})</h3>
+          <div class="members-list" *ngIf="selectedTeamMembers.length > 0">
+            <div *ngFor="let member of selectedTeamMembers" class="member-item">              <div class="member-info">
+                <span class="member-name">{{ member.name }}</span>
+                <span class="member-email">{{ member.email }}</span>
+                <span class="member-role" *ngIf="member.role">{{ getRoleDisplayName(member.role) }}</span>
+              </div>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                (click)="removeMemberFromTeam(member.id)"
+                [disabled]="member.id === selectedTeam?.managerId">
+                <i class="fas fa-times"></i>
+                Retirer
+              </button>
+            </div>
+          </div>
+          <div *ngIf="selectedTeamMembers.length === 0" class="no-members">
+            <p>Aucun membre dans cette équipe</p>
+          </div>
+        </div>        <div class="available-users">
+          <h3>Utilisateurs disponibles</h3>
+          <div class="role-filter-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Seuls les utilisateurs avec le rôle "MEMBRE_EQUIPE" peuvent rejoindre une équipe</span>
+          </div>
+          <div class="users-list" *ngIf="availableUsers.length > 0">
+            <div *ngFor="let user of availableUsers" class="user-item">              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+                <span class="user-role" *ngIf="user.role">{{ getRoleDisplayName(user.role) }}</span>
+              </div>
+              <button
+                class="btn btn-outline-success btn-sm"
+                (click)="addMemberToTeam(user.id)">
+                <i class="fas fa-plus"></i>
+                Ajouter
+              </button>
+            </div>
+          </div>          <div *ngIf="availableUsers.length === 0" class="no-users">
+            <p>Aucun utilisateur avec le rôle "MEMBRE_EQUIPE" disponible</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="closeMemberModal()">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>

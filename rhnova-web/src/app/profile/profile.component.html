@@ -1,0 +1,252 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1 class="page-title">My Profile</h1>
+    <div class="header-actions">
+      <button 
+        class="btn btn-outline" 
+        [class.active]="editMode"
+        (click)="toggleEditMode()"
+      >
+        {{ editMode ? 'Cancel' : 'Edit Profile' }}
+      </button>
+      <button 
+        *ngIf="editMode" 
+        class="btn btn-primary" 
+        (click)="saveProfile()"
+        [disabled]="profileForm.invalid"
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar-container">
+          <img 
+            [src]="userProfile.avatar || '/assets/default-avatar.png'" 
+            [alt]="userProfile.firstName + ' ' + userProfile.lastName"
+            class="avatar"
+          />
+          <button *ngIf="editMode" class="avatar-edit-btn" (click)="changeAvatar()">
+            <i class="icon-camera"></i>
+          </button>
+        </div>
+        <div class="profile-info">
+          <h2 class="profile-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</h2>
+          <p class="profile-position">{{ userProfile.position }}</p>
+          <p class="profile-department">{{ userProfile.department }}</p>
+          <div class="profile-meta">
+            <span class="join-date">
+              <i class="icon-calendar"></i>
+              Joined {{ userProfile.joinDate | date:'MMMM yyyy' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <div class="profile-form-section">
+      <form [formGroup]="profileForm" class="profile-form">
+        
+        <!-- Personal Information -->
+        <div class="form-section">
+          <h3 class="section-title">Personal Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input 
+                id="firstName"
+                type="text" 
+                formControlName="firstName"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input 
+                id="lastName"
+                type="text" 
+                formControlName="lastName"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input 
+                id="email"
+                type="email" 
+                formControlName="email"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber">Phone Number</label>
+              <input 
+                id="phoneNumber"
+                type="tel" 
+                formControlName="phoneNumber"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Information -->
+        <div class="form-section">
+          <h3 class="section-title">Work Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="department">Department</label>
+              <select 
+                id="department"
+                formControlName="department"
+                [disabled]="!editMode"
+                class="form-control"
+              >
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="Finance">Finance</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+                <option value="Operations">Operations</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="position">Position</label>
+              <input 
+                id="position"
+                type="text" 
+                formControlName="position"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="form-section" formGroupName="address">
+          <h3 class="section-title">Address Information</h3>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="street">Street Address</label>
+              <input 
+                id="street"
+                type="text" 
+                formControlName="street"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="city">City</label>
+              <input 
+                id="city"
+                type="text" 
+                formControlName="city"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="state">State</label>
+              <input 
+                id="state"
+                type="text" 
+                formControlName="state"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="zipCode">ZIP Code</label>
+              <input 
+                id="zipCode"
+                type="text" 
+                formControlName="zipCode"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="country">Country</label>
+              <input 
+                id="country"
+                type="text" 
+                formControlName="country"
+                [readonly]="!editMode"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="form-section" formGroupName="preferences">
+          <h3 class="section-title">Preferences</h3>
+          <div class="preferences-grid">
+            <div class="preference-item">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  formControlName="notifications"
+                  [disabled]="!editMode"
+                />
+                <span class="checkmark"></span>
+                Email Notifications
+              </label>
+              <p class="preference-description">Receive notifications about important updates</p>
+            </div>
+            <div class="preference-item">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  formControlName="emailUpdates"
+                  [disabled]="!editMode"
+                />
+                <span class="checkmark"></span>
+                Email Updates
+              </label>
+              <p class="preference-description">Receive weekly email updates</p>
+            </div>
+            <div class="preference-item">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  formControlName="darkMode"
+                  [disabled]="!editMode"
+                />
+                <span class="checkmark"></span>
+                Dark Mode
+              </label>
+              <p class="preference-description">Use dark theme interface</p>
+            </div>
+            <div class="preference-item">
+              <label for="language">Language</label>
+              <select 
+                id="language"
+                formControlName="language"
+                [disabled]="!editMode"
+                class="form-control"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

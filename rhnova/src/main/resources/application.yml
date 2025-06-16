@@ -1,0 +1,40 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nizaraoun1919@gmail.com
+    password: ieme xjdt raue lenj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/RhNova
+      database: RhNova
+
+  mvc:
+    static-path-pattern: /uploads/**
+    
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+server:
+  tomcat:
+    max-swallow-size: 20MB
+
+logging:
+  level:
+    root: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level- %logger{45} - %msg %n"
+
+app:
+  client:
+    url: http://localhost:8080/*

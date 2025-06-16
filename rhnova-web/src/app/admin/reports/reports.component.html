@@ -1,0 +1,205 @@
+<div class="reports-container">
+  <div class="header">
+    <h1>Rapports et Statistiques</h1>
+    <div class="header-controls">
+      <select [(ngModel)]="selectedDateRange" (change)="onDateRangeChange()" class="date-range-select">
+        <option value="7">7 derniers jours</option>
+        <option value="30">30 derniers jours</option>
+        <option value="90">90 derniers jours</option>
+        <option value="365">12 derniers mois</option>
+      </select>
+      
+      <div class="export-buttons">
+        <button class="btn btn-outline-primary btn-sm" (click)="exportReport('pdf')">
+          <i class="fas fa-file-pdf"></i>
+          PDF
+        </button>
+        <button class="btn btn-outline-success btn-sm" (click)="exportReport('excel')">
+          <i class="fas fa-file-excel"></i>
+          Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Génération du rapport...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="reports-content">
+    <!-- Overview Cards -->
+    <div class="overview-section">
+      <h2>Vue d'ensemble</h2>
+      <div class="stats-grid">
+        <div class="stat-card users">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ reportData.totalUsers }}</h3>
+            <p>Utilisateurs totaux</p>
+            <div class="stat-detail">
+              <span class="active">{{ reportData.activeUsers }} actifs</span>
+              <span class="percentage success">{{ getSuccessRate(reportData.activeUsers, reportData.totalUsers) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card job-offers">
+          <div class="stat-icon">
+            <i class="fas fa-briefcase"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ reportData.totalJobOffers }}</h3>
+            <p>Offres d'emploi</p>
+            <div class="stat-detail">
+              <span class="active">{{ reportData.activeJobOffers }} actives</span>
+              <span class="percentage success">{{ getSuccessRate(reportData.activeJobOffers, reportData.totalJobOffers) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card candidates">
+          <div class="stat-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ reportData.totalCandidates }}</h3>
+            <p>Candidatures</p>
+            <div class="stat-detail">
+              <span class="active">{{ reportData.acceptedCandidates }} acceptées</span>
+              <span class="percentage success">{{ getSuccessRate(reportData.acceptedCandidates, reportData.totalCandidates) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card interviews">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ reportData.totalInterviews }}</h3>
+            <p>Entretiens</p>
+            <div class="stat-detail">
+              <span class="active">{{ reportData.completedInterviews }} terminés</span>
+              <span class="percentage success">{{ getCompletionRate(reportData.completedInterviews, reportData.totalInterviews) }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Metrics -->
+    <div class="metrics-section">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>Performance des Équipes</h3>
+          <div class="metric-content">
+            <div class="metric-item">
+              <span class="metric-label">Équipes actives</span>
+              <span class="metric-value">{{ reportData.totalTeams }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Tâches assignées</span>
+              <span class="metric-value">{{ reportData.totalTasks }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Tâches terminées</span>
+              <span class="metric-value">{{ reportData.completedTasks }}</span>
+            </div>
+            <div class="progress-section">
+              <div class="progress-header">
+                <span>Taux de completion</span>
+                <span class="progress-percentage">{{ getCompletionRate(reportData.completedTasks, reportData.totalTasks) }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getCompletionRate(reportData.completedTasks, reportData.totalTasks)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Efficacité du Recrutement</h3>
+          <div class="metric-content">
+            <div class="metric-item">
+              <span class="metric-label">Taux de conversion</span>
+              <span class="metric-value">{{ getSuccessRate(reportData.acceptedCandidates, reportData.totalCandidates) }}%</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Entretiens planifiés</span>
+              <span class="metric-value">{{ reportData.totalInterviews }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Offres acceptées</span>
+              <span class="metric-value">{{ reportData.acceptedCandidates }}</span>
+            </div>
+            <div class="conversion-funnel">
+              <div class="funnel-item">
+                <span>Candidatures</span>
+                <div class="funnel-bar">
+                  <div class="funnel-fill" style="width: 100%"></div>
+                  <span class="funnel-number">{{ reportData.totalCandidates }}</span>
+                </div>
+              </div>
+              <div class="funnel-item">
+                <span>Entretiens</span>
+                <div class="funnel-bar">
+                  <div class="funnel-fill" [style.width.%]="getSuccessRate(reportData.totalInterviews, reportData.totalCandidates)"></div>
+                  <span class="funnel-number">{{ reportData.totalInterviews }}</span>
+                </div>
+              </div>
+              <div class="funnel-item">
+                <span>Acceptées</span>
+                <div class="funnel-bar">
+                  <div class="funnel-fill" [style.width.%]="getSuccessRate(reportData.acceptedCandidates, reportData.totalCandidates)"></div>
+                  <span class="funnel-number">{{ reportData.acceptedCandidates }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="timeline-section">
+      <h3>Activités Récentes</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker success"></div>
+          <div class="timeline-content">
+            <h4>Nouvelle embauche</h4>
+            <p>Marie Dubois a accepté le poste de Développeur Frontend</p>
+            <span class="timeline-date">Il y a 2 heures</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker info"></div>
+          <div class="timeline-content">
+            <h4>Entretien programmé</h4>
+            <p>Entretien technique avec Paul Martin pour le poste DevOps</p>
+            <span class="timeline-date">Il y a 4 heures</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker warning"></div>
+          <div class="timeline-content">
+            <h4>Offre publiée</h4>
+            <p>Nouvelle offre pour Architecte Solution Senior</p>
+            <span class="timeline-date">Il y a 1 jour</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker success"></div>
+          <div class="timeline-content">
+            <h4>Équipe complétée</h4>
+            <p>L'équipe Backend Development a atteint son effectif cible</p>
+            <span class="timeline-date">Il y a 2 jours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

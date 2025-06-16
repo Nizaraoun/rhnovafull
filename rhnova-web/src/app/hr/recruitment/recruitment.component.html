@@ -1,0 +1,320 @@
+<div class="recruitment-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Recruitment Management</h1>
+      <p class="page-subtitle">Manage job postings and track candidates</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-primary" (click)="openJobModal()">
+        <i class="icon-plus"></i>
+        Post New Job
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      type="button" 
+      class="tab-button"
+      [class.active]="activeTab === 'jobs'"
+      (click)="switchTab('jobs')"
+    >
+      <i class="icon-briefcase"></i>
+      Job Postings ({{ jobPostings.length }})
+    </button>
+    <button 
+      type="button" 
+      class="tab-button"
+      [class.active]="activeTab === 'candidates'"
+      (click)="switchTab('candidates')"
+    >
+      <i class="icon-users"></i>
+      Candidates ({{ candidates.length }})
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <form [formGroup]="searchForm" class="filters-form">
+      <div class="search-field">
+        <i class="icon-search"></i>
+        <input 
+          type="text" 
+          formControlName="searchTerm"
+          [placeholder]="activeTab === 'jobs' ? 'Search job titles...' : 'Search candidates...'"
+          class="form-input"
+        />
+      </div>
+      
+      <div class="filter-field">
+        <select formControlName="status" class="form-select">
+          <option value="">All Status</option>
+          <ng-container *ngIf="activeTab === 'jobs'">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="filled">Filled</option>
+          </ng-container>
+          <ng-container *ngIf="activeTab === 'candidates'">
+            <option value="applied">Applied</option>
+            <option value="screening">Screening</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+          </ng-container>
+        </select>
+      </div>
+      
+      <div class="filter-field" *ngIf="activeTab === 'jobs'">
+        <select formControlName="department" class="form-select">
+          <option value="">All Departments</option>
+          <option value="Engineering">Engineering</option>
+          <option value="HR">HR</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Sales">Sales</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <!-- Job Postings Tab -->
+  <div *ngIf="activeTab === 'jobs'" class="jobs-content">
+    <div class="jobs-grid">
+      <div *ngFor="let job of filteredJobs" class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title">{{ job.title }}</h3>
+            <div class="job-meta">
+              <span class="meta-item">
+                <i class="icon-building"></i>
+                {{ job.department }}
+              </span>
+              <span class="meta-item">
+                <i class="icon-map-pin"></i>
+                {{ job.location }}
+              </span>
+              <span class="meta-item">
+                <i class="icon-clock"></i>
+                {{ job.type | titlecase }}
+              </span>
+            </div>
+          </div>
+          <div class="job-status">
+            <span class="status-badge" [ngClass]="getStatusClass(job.status)">
+              {{ job.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="job-stats">
+          <div class="stat">
+            <span class="stat-value">{{ job.applicants }}</span>
+            <span class="stat-label">Applicants</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ (job.deadline | date:'MMM dd') }}</span>
+            <span class="stat-label">Deadline</span>
+          </div>
+        </div>
+
+        <div class="job-description">
+          <p>{{ job.description | slice:0:120 }}...</p>
+        </div>
+
+        <div class="job-actions">
+          <button type="button" class="btn btn-outline btn-sm" (click)="openJobModal(job)">
+            <i class="icon-edit"></i>
+            Edit
+          </button>
+          <button type="button" class="btn btn-primary btn-sm">
+            <i class="icon-eye"></i>
+            View Applications
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State for Jobs -->
+    <div *ngIf="filteredJobs.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="icon-briefcase"></i>
+      </div>
+      <h3>No job postings found</h3>
+      <p>Start by creating your first job posting to attract candidates.</p>
+      <button type="button" class="btn btn-primary" (click)="openJobModal()">
+        Post Your First Job
+      </button>
+    </div>
+  </div>
+
+  <!-- Candidates Tab -->
+  <div *ngIf="activeTab === 'candidates'" class="candidates-content">
+    <div class="candidates-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Position</th>
+            <th>Experience</th>
+            <th>Applied Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let candidate of filteredCandidates" class="candidate-row">
+            <td class="candidate-info">
+              <div class="candidate-details">
+                <h4 class="candidate-name">{{ candidate.name }}</h4>
+                <div class="contact-info">
+                  <span>{{ candidate.email }}</span>
+                  <span>{{ candidate.phone }}</span>
+                </div>
+              </div>
+            </td>
+            
+            <td class="position">{{ candidate.position }}</td>
+            
+            <td class="experience">{{ candidate.experience }} years</td>
+            
+            <td class="applied-date">{{ candidate.appliedDate | date:'MMM dd, yyyy' }}</td>
+            
+            <td class="status">
+              <select 
+                [value]="candidate.status" 
+                (change)="updateCandidateStatus(candidate, $any($event.target).value)"
+                class="status-select"
+                [ngClass]="getStatusClass(candidate.status)"
+              >
+                <option value="applied">Applied</option>
+                <option value="screening">Screening</option>
+                <option value="interview">Interview</option>
+                <option value="offer">Offer</option>
+                <option value="hired">Hired</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </td>
+            
+            <td class="actions">
+              <div class="action-buttons">
+                <button type="button" class="btn-icon btn-icon-primary" title="View Resume">
+                  <i class="icon-file-text"></i>
+                </button>
+                <button type="button" class="btn-icon btn-icon-info" title="Schedule Interview">
+                  <i class="icon-calendar"></i>
+                </button>
+                <button type="button" class="btn-icon btn-icon-success" title="Send Message">
+                  <i class="icon-mail"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State for Candidates -->
+    <div *ngIf="filteredCandidates.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="icon-users"></i>
+      </div>
+      <h3>No candidates found</h3>
+      <p>Candidates will appear here when they apply to your job postings.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal-overlay" *ngIf="showJobModal" (click)="closeJobModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingJob ? 'Edit Job Posting' : 'Create New Job Posting' }}</h2>
+      <button type="button" class="btn-close" (click)="closeJobModal()">
+        <i class="icon-x"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="jobForm" (ngSubmit)="saveJob()">
+        <div class="form-group">
+          <label for="title">Job Title *</label>
+          <input 
+            type="text" 
+            id="title"
+            formControlName="title"
+            class="form-input"
+            placeholder="e.g. Senior Frontend Developer"
+          />
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department *</label>
+            <select id="department" formControlName="department" class="form-select">
+              <option value="">Select Department</option>
+              <option value="Engineering">Engineering</option>
+              <option value="HR">HR</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <input 
+              type="text" 
+              id="location"
+              formControlName="location"
+              class="form-input"
+              placeholder="e.g. Remote, New York"
+            />
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="type">Employment Type *</label>
+            <select id="type" formControlName="type" class="form-select">
+              <option value="">Select Type</option>
+              <option value="full-time">Full-time</option>
+              <option value="part-time">Part-time</option>
+              <option value="contract">Contract</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="deadline">Application Deadline *</label>
+            <input 
+              type="date" 
+              id="deadline"
+              formControlName="deadline"
+              class="form-input"
+            />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Job Description *</label>
+          <textarea 
+            id="description"
+            formControlName="description"
+            class="form-textarea"
+            rows="6"
+            placeholder="Describe the role, responsibilities, and requirements..."
+          ></textarea>
+        </div>
+      </form>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="closeJobModal()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" (click)="saveJob()" [disabled]="jobForm.invalid">
+        {{ editingJob ? 'Update Job' : 'Post Job' }}
+      </button>
+    </div>
+  </div>
+</div>
