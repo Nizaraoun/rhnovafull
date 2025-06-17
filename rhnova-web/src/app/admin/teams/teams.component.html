@@ -28,43 +28,33 @@
     <div
       *ngFor="let team of filteredTeams"
       class="team-card">
-      <div class="team-header">
-        <div class="team-info">
+      <div class="team-header">        <div class="team-info">
           <h3>{{ team.nom }}</h3>
-          <p class="department" *ngIf="team.departement">{{ team.departement }}</p>
           <p class="members-count">
             <i class="fas fa-users"></i>
-           membre(s)
-          </p>
-        </div>
-        <div class="team-budget" *ngIf="team.budget">
-          <span class="budget-label">Budget</span>
-          <span class="budget-amount">{{ team.budget | currency:'EUR':'symbol':'1.0-0' }}</span>
-        </div>
+            {{ getMemberCount(team) }} membre(s)
+          </p>        </div>
       </div>
 
       <div class="team-description" *ngIf="team.description">
         <p>{{ team.description }}</p>
       </div>
 
-      <div class="team-objectives" *ngIf="team.objectifs">
-        <h4>Objectifs</h4>
-        <p>{{ team.objectifs }}</p>
-      </div>      <div class="team-members" *ngIf="team.membreIds && team.membreIds.length > 0">
+      <div class="team-members" *ngIf="team.membres && team.membres.length > 0">
         <h4>Membres de l'équipe</h4>
         <div class="members-list">
           <div
-            *ngFor="let memberId of team.membreIds"
+            *ngFor="let member of team.membres"
             class="member-badge">
-            {{ getMemberName(memberId) }}
+            {{ member.name }}
           </div>
         </div>
       </div>
 
-      <div class="team-manager" *ngIf="team.managerId">
+      <div class="team-manager" *ngIf="team.manager">
         <h4>Manager</h4>
-        <p>{{ getManagerName(team.managerId) }}</p>
-      </div>      <div class="team-actions">
+        <p>{{ getManagerName(team) }}</p>
+      </div><div class="team-actions">
         <button
           class="btn btn-outline-primary btn-sm"
           (click)="openEditModal(team)">
@@ -119,35 +109,16 @@
           <div class="error-message" *ngIf="teamForm.get('nom')?.invalid && teamForm.get('nom')?.touched">
             Le nom de l'équipe est requis (minimum 2 caractères)
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="departement">Département *</label>
-            <select id="departement" formControlName="departement" class="form-select">
-              <option value="">Sélectionner un département</option>
-              <option value="IT">Informatique</option>
-              <option value="RH">Ressources Humaines</option>
-              <option value="FINANCE">Finance</option>
-              <option value="MARKETING">Marketing</option>
-              <option value="VENTES">Ventes</option>
-              <option value="PRODUCTION">Production</option>
-              <option value="LOGISTIQUE">Logistique</option>
-            </select>
-            <div class="error-message" *ngIf="teamForm.get('departement')?.invalid && teamForm.get('departement')?.touched">
-              Le département est requis
-            </div>
-          </div>          <div class="form-group">
-            <label for="managerId">Manager *</label>
-            <select id="managerId" formControlName="managerId" class="form-select">
-              <option value="">Sélectionner un manager</option>
-              <option *ngFor="let user of allUsers" [value]="user.id">
-                {{ user.name }} ({{ user.email }})
-              </option>
-            </select>
-            <div class="error-message" *ngIf="teamForm.get('managerId')?.invalid && teamForm.get('managerId')?.touched">
-              Le manager est requis
-            </div>
+        </div>        <div class="form-group">
+          <label for="managerId">Manager *</label>
+          <select id="managerId" formControlName="managerId" class="form-select">
+            <option value="">Sélectionner un manager</option>
+            <option *ngFor="let user of allUsers" [value]="user.id">
+              {{ user.name }} ({{ user.email }})
+            </option>
+          </select>
+          <div class="error-message" *ngIf="teamForm.get('managerId')?.invalid && teamForm.get('managerId')?.touched">
+            Le manager est requis
           </div>
         </div>
 
@@ -159,28 +130,6 @@
             class="form-textarea"
             rows="3"
             placeholder="Description de l'équipe..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="objectifs">Objectifs</label>
-          <textarea
-            id="objectifs"
-            formControlName="objectifs"
-            class="form-textarea"
-            rows="3"
-            placeholder="Objectifs de l'équipe..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="budget">Budget (€)</label>
-          <input
-            type="number"
-            id="budget"
-            formControlName="budget"
-            class="form-input"
-            min="0"
-            step="1000"
-            placeholder="Budget en euros">
         </div>
       </form>
     </div>
@@ -218,11 +167,10 @@
                 <span class="member-name">{{ member.name }}</span>
                 <span class="member-email">{{ member.email }}</span>
                 <span class="member-role" *ngIf="member.role">{{ getRoleDisplayName(member.role) }}</span>
-              </div>
-              <button
+              </div>              <button
                 class="btn btn-outline-danger btn-sm"
                 (click)="removeMemberFromTeam(member.id)"
-                [disabled]="member.id === selectedTeam?.managerId">
+                [disabled]="member.id === selectedTeam?.manager?.id">
                 <i class="fas fa-times"></i>
                 Retirer
               </button>

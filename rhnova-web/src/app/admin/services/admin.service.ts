@@ -20,14 +20,21 @@ import {
   JobOfferMapper 
 } from '../../shared/models/jobOfferBackend';
 
-// Additional interfaces needed by the admin module
-export interface Team extends EquipeDto {
-  // Additional UI properties can be added here
-  memberCount?: number;
-  departement?: string;
-  budget?: number;
-  objectifs?: string;
-  membres?: UserDto[]; // For displaying member information
+// Team request interface for API calls
+export interface TeamRequest {
+  nom: string;
+  description: string;
+  managerId: string;
+  membreIds: string[];
+}
+
+// Team interface matching backend entity
+export interface Team {
+  id: string;
+  nom: string;
+  description: string;
+  manager: UserDto;
+  membres: UserDto[];
 }
 
 
@@ -146,14 +153,31 @@ export class AdminService {
   // Team management (using EquipeDto but with Team interface for UI)
   getAllTeams(): Observable<Team[]> {
     return this.http.get<Team[]>(`${this.apiUrl}/api/equipes`);
+  }  createTeam(team: TeamRequest): Observable<Team> {
+    // Ensure the request matches exactly the curl example:
+    // { "nom": "...", "description": "...", "managerId": "...", "membreIds": [...] }
+    const requestPayload = {
+      nom: team.nom,
+      description: team.description,
+      managerId: team.managerId,
+      membreIds: team.membreIds
+    };
+    
+    console.log('Creating team with payload:', requestPayload);
+    return this.http.post<Team>(`${this.apiUrl}/api/equipes`, requestPayload);
   }
-
-  createTeam(team: Partial<Team>): Observable<Team> {
-    return this.http.post<Team>(`${this.apiUrl}/api/equipes`, team);
-  }
-
-  updateTeam(id: string, team: Partial<Team>): Observable<Team> {
-    return this.http.put<Team>(`${this.apiUrl}/api/equipes/${id}`, team);
+  updateTeam(id: string, team: TeamRequest): Observable<Team> {
+    // Ensure the request matches exactly the curl example:
+    // { "nom": "...", "description": "...", "managerId": "...", "membreIds": [...] }
+    const requestPayload = {
+      nom: team.nom,
+      description: team.description,
+      managerId: team.managerId,
+      membreIds: team.membreIds
+    };
+    
+    console.log('Updating team with payload:', requestPayload);
+    return this.http.put<Team>(`${this.apiUrl}/api/equipes/${id}`, requestPayload);
   }
   deleteTeam(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/api/equipes/${id}`);
@@ -170,20 +194,7 @@ export class AdminService {
 
   getTeamMembers(teamId: string): Observable<UserDto[]> {
     return this.http.get<UserDto[]>(`${this.apiUrl}/api/equipes/${teamId}/membres`);
-  }
-  createEquipe(equipe: EquipeDto): Observable<EquipeDto> {
-    return this.http.post<EquipeDto>(`${this.apiUrl}/api/equipes`, equipe);
-  }
-
-  updateEquipe(id: string, equipe: EquipeDto): Observable<EquipeDto> {
-    return this.http.put<EquipeDto>(`${this.apiUrl}/api/equipes/${id}`, equipe);
-  }
-
-  deleteEquipe(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/equipes/${id}`);
-  }
-
-  // Candidature management
+  }  // Candidature management
   getAllCandidatures(): Observable<CandidatureDto[]> {
     return this.http.get<CandidatureDto[]>(`${this.apiUrl}/api/admin/candidatures`);
   }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Team, AdminService } from '../services/admin.service';
+import { Team, AdminService, TeamRequest } from '../services/admin.service';
 import { UserDto } from '../../shared/models';
 import { Role } from '../../shared/models/role.model';
 
@@ -24,19 +24,14 @@ export class TeamsComponent implements OnInit {
   teamForm: FormGroup;
   selectedTeam: Team | null = null;
   selectedTeamMembers: UserDto[] = [];
-  availableUsers: UserDto[] = [];
-
-  constructor(
+  availableUsers: UserDto[] = [];  constructor(
     private adminService: AdminService,
     private fb: FormBuilder
   ) {
     this.teamForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
       description: [''],
-      managerId: ['', Validators.required],
-      departement: ['', Validators.required],
-      budget: ['', [Validators.min(0)]],
-      objectifs: ['']
+      managerId: ['', Validators.required]
     });
   }
   ngOnInit(): void {
@@ -54,13 +49,12 @@ export class TeamsComponent implements OnInit {
         console.error('Error loading users:', error);
       }
     });
-  }
-  updateAvailableUsers(): void {
+  }  updateAvailableUsers(): void {
     // Filter users to only show those with MEMBRE_EQUIPE role
     const eligibleUsers = this.allUsers.filter(user => user.role === Role.MEMBRE_EQUIPE);
     
     if (this.selectedTeam) {
-      const teamMemberIds = this.selectedTeam.membreIds || [];
+      const teamMemberIds = this.selectedTeam.membres ? this.selectedTeam.membres.map(m => m.id) : [];
       this.availableUsers = eligibleUsers.filter(user => 
         !teamMemberIds.includes(user.id)
       );
@@ -81,12 +75,11 @@ export class TeamsComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
-  filterTeams(): void {
+  }  filterTeams(): void {
     this.filteredTeams = this.teams.filter(team => 
       !this.searchTerm || 
       team.nom.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      (team.departement && team.departement.toLowerCase().includes(this.searchTerm.toLowerCase()))
+      team.description.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
@@ -99,12 +92,14 @@ export class TeamsComponent implements OnInit {
       this.teamForm.get(key)?.markAsUntouched();
     });
     this.showModal = true;
-  }
-
-  openEditModal(team: Team): void {
+  }  openEditModal(team: Team): void {
     this.isEditing = true;
     this.selectedTeam = team;
-    this.teamForm.patchValue(team);
+    this.teamForm.patchValue({
+      nom: team.nom,
+      description: team.description,
+      managerId: team.manager?.id || ''
+    });
     // Mark all fields as untouched to prevent showing validation errors initially
     Object.keys(this.teamForm.controls).forEach(key => {
       this.teamForm.get(key)?.markAsUntouched();
@@ -121,13 +116,23 @@ export class TeamsComponent implements OnInit {
     Object.keys(this.teamForm.controls).forEach(key => {
       this.teamForm.get(key)?.markAsUntouched();
     });
-  }
-
-  onSubmit(): void {
+  }  onSubmit(): void {
     if (this.teamForm.valid) {
-      const teamData = this.teamForm.value;
+      const formValue = this.teamForm.value;
       
-      if (this.isEditing && this.selectedTeam) {
+      // Map form data to match the expected API structure
+      const teamData: TeamRequest = {
+        nom: formValue.nom,
+        description: formValue.description || '',
+        managerId: formValue.managerId,
+        membreIds: [] // Initialize with empty array, members will be added separately
+      };
+      
+      console.log('Sending team data to API:', teamData);
+        if (this.isEditing && this.selectedTeam) {
+        // For editing, preserve existing member IDs
+        teamData.membreIds = this.selectedTeam.membres ? this.selectedTeam.membres.map(m => m.id) : [];
+        
         this.adminService.updateTeam(this.selectedTeam.id, teamData).subscribe({
           next: () => {
             this.loadTeams();
@@ -165,7 +170,7 @@ export class TeamsComponent implements OnInit {
       });
     }
   }  getMemberCount(team: Team): number {
-    return team.membreIds ? team.membreIds.length : 0;
+    return team.membres ? team.membres.length : 0;
   }
 
   openMemberModal(team: Team): void {
@@ -187,12 +192,9 @@ export class TeamsComponent implements OnInit {
         this.selectedTeamMembers = members;
       },
       error: (error: any) => {
-        console.error('Error loading team members:', error);
-        // Fallback: get member details from IDs
-        if (this.selectedTeam && this.selectedTeam.membreIds) {
-          this.selectedTeamMembers = this.allUsers.filter(user => 
-            this.selectedTeam!.membreIds.includes(user.id)
-          );
+        console.error('Error loading team members:', error);        // Fallback: get member details from IDs
+        if (this.selectedTeam && this.selectedTeam.membres) {
+          this.selectedTeamMembers = this.selectedTeam.membres;
         }
       }
     });
@@ -232,16 +234,8 @@ export class TeamsComponent implements OnInit {
         }
       });
     }
-  }
-
-  getManagerName(managerId: string): string {
-    const manager = this.allUsers.find(user => user.id === managerId);
-    return manager ? manager.name : managerId;
-  }
-
-  getMemberName(memberId: string): string {
-    const member = this.allUsers.find(user => user.id === memberId);
-    return member ? member.name : `User ${memberId}`;
+  }  getManagerName(team: Team): string {
+    return team.manager ? team.manager.name : 'Non assigné';
   }
 
   canJoinTeam(user: UserDto): boolean {
