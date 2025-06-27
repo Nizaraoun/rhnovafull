@@ -1,0 +1,284 @@
+<div class="manager-dashboard">  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <h1>Tableau de Bord Manager</h1>
+    <p *ngIf="teamDetails">Bienvenue ! Voici ce qui se passe avec votre équipe "{{ teamDetails.nom }}" aujourd'hui.</p>
+    <p *ngIf="!teamDetails && !isLoading">Bienvenue ! Voici ce qui se passe avec votre équipe aujourd'hui.</p>
+  </div>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement des données du tableau de bord...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="refreshData()">Réessayer</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !error">    <!-- Dashboard Stats -->
+    <!-- <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon tasks">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.totalTasks }}</h3>
+          <p>Total Tasks</p>
+          <small class="stat-insight">{{ getTasksInProgress() }} in progress</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon completed">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="20,6 9,17 4,12"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.completedTasks }}</h3>
+          <p>Completed Tasks</p>
+          <small class="stat-insight">{{ getCompletionRate() }}% completion rate</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon pending">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.pendingTasks }}</h3>
+          <p>Pending Tasks</p>
+          <small class="stat-insight">{{ getNextDeadline() }}</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon team">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.teamMembers }}</h3>
+          <p>Team Members</p>
+          <small class="stat-insight">{{ getProductivityScore() }} productivity</small>
+        </div>
+      </div>
+
+      
+    </div> -->
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Recent Tasks -->
+      <div class="content-section">        <div class="section-header">
+          <h2>Tâches Récentes</h2>
+          <a routerLink="/manager/tasks" class="view-all-btn">Voir Tout</a>
+        </div><div class="tasks-list" *ngIf="recentTasks.length > 0; else noTasks">
+          <div class="task-item" 
+               *ngFor="let task of recentTasks" 
+               (click)="navigateToTask(task.id)"
+               [ngClass]="{ 'overdue': isOverdue(task) }">
+            <div class="task-info">
+              <h4>
+                {{ task.titre }}                <span class="overdue-indicator" *ngIf="isOverdue(task)">⚠️ EN RETARD</span>
+              </h4>
+              <p>{{ task.description | slice:0:100 }}{{ task.description.length > 100 ? '...' : '' }}</p>
+              <p *ngIf="task.membreName">Assignée à : {{ task.membreName }}</p>
+              <p *ngIf="!task.membreName" class="unassigned">Non assignée</p>
+              <span class="due-date" [ngClass]="{ 'overdue-date': isOverdue(task) }">
+                Échéance : {{ task.dateFin | date:'short' }}
+              </span>
+            </div>
+            <div class="task-meta">
+              <span class="priority-badge" [ngClass]="getTaskPriorityClass(task.priorite)">
+                {{ getPriorityText(task.priorite) }}
+              </span>
+              <span class="status-badge" [ngClass]="getStatusClass(task.statut)">
+                {{ getStatusText(task.statut) }}
+              </span>
+              <div class="progress-indicator" *ngIf="task.progression !== undefined">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="task.progression"></div>
+                </div>
+                <span class="progress-text">{{ task.progression }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noTasks>
+          <div class="no-tasks">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+            </svg>            <p>Aucune tâche trouvée pour votre équipe pour le moment.</p>
+            <a routerLink="/manager/tasks" class="create-task-link">Créer votre première tâche</a>
+          </div>        </ng-template>
+      </div>
+
+      <!-- Team Overview -->
+      <div class="content-section" *ngIf="currentTeam">        <div class="section-header">
+          <h2>Aperçu de l'Équipe</h2>
+          <a routerLink="/manager/team-overview" class="view-all-btn">Voir l'Aperçu Complet</a>
+        </div>
+        
+        <div class="team-overview-card">
+          <div class="team-header">
+            <div class="team-info">
+              <h3>{{ currentTeam.name }}</h3>
+              <p>{{ currentTeam.description }}</p>
+              <div class="team-stats-compact">
+                <span class="stat-item">
+                  <i class="fas fa-users"></i>
+                  {{ currentTeam.members.length }} members
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-tasks"></i>
+                  {{ currentTeam.totalTasks }} total tasks
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-check-circle"></i>
+                  {{ getCompletionPercentage(currentTeam) }}% completion
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="team-members-preview">
+            <h4>Membres de l'Équipe</h4>
+            <div class="members-grid-compact" *ngIf="currentTeam.members.length > 0; else noMembers">
+              <div class="member-card-compact" *ngFor="let member of currentTeam.members | slice:0:4">
+                <div class="member-avatar">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="member-info">
+                  <h5>{{ member.name }}</h5>
+                  <p class="position">{{ member.position }}</p>
+                  
+                </div>
+                <div class="member-actions">
+                  <button class="btn-icon" title="Assign Task" (click)="assignTaskToMember(member)">
+                    <i routerLink="/manager/tasks" class="btn-icon">
+                      <i class="fas fa-plus"></i>
+                    </i>
+                  </button>
+                  <button class="btn-icon" title="View Profile" (click)="viewMemberDetails(member)">
+                    <i class="fas fa-user"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="more-members" *ngIf="currentTeam.members.length > 4">
+                <a routerLink="/manager/team-overview" class="more-link">
+                  +{{ currentTeam.members.length - 4 }} more
+                </a>
+              </div>
+            </div>
+            
+            <ng-template #noMembers>
+              <div class="no-members">
+                <i class="fas fa-user-plus"></i>
+                <p>No team members yet</p>
+                <a routerLink="/manager/teams" class="add-member-link">Add team members</a>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="team-progress-overview">
+            <h4>Aperçu du Progrès</h4>
+            <div class="progress-cards">
+              <div class="progress-card">
+                <div class="progress-icon completed">
+                  <i class="fas fa-check"></i>
+                </div>
+                <div class="progress-info">
+                  <h5>{{ currentTeam.completedTasks }}</h5>
+                  <p>Completed Tasks</p>
+                </div>
+              </div>
+              
+              <div class="progress-card">
+                <div class="progress-icon total">
+                  <i class="fas fa-list"></i>
+                </div>
+                <div class="progress-info">
+                  <h5>{{ currentTeam.totalTasks }}</h5>
+                  <p>Total Tasks</p>
+                </div>
+              </div>
+              
+              <div class="progress-card">
+                <div class="progress-icon percentage">
+                  <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="progress-info">
+                  <h5>{{ getCompletionPercentage(currentTeam) }}%</h5>
+                  <p>Completion Rate</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getCompletionPercentage(currentTeam)"></div>
+              </div>
+              <span class="progress-text">{{ getCompletionPercentage(currentTeam) }}% Terminé</span>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+    </div>    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3>Actions Rapides</h3>
+      <div class="action-buttons">
+        <a routerLink="/manager/tasks" class="action-btn primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Créer une Tâche
+        </a>
+        <a routerLink="/manager/teams" class="action-btn secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Voir l'Équipe
+        </a>
+        <a routerLink="/manager/progress" class="action-btn info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Voir le Progrès
+        </a>
+        <button class="action-btn refresh" (click)="refreshData()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="23,4 23,10 17,10"/>
+            <polyline points="1,20 1,14 7,14"/>
+            <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10"/>
+            <path d="M3.51,15A9,9,0,0,0,18.36,18.36L23,14"/>
+          </svg>
+          Actualiser
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

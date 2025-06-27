@@ -30,5 +30,9 @@ public interface JobOfferRepository extends MongoRepository<JobOffer, String> {
     // Find all non-archived offers (without pagination)
     @Query("{'archived': {$ne: true}}")
     List<JobOffer> findAllNonArchived();
+    
+    // Find job offers by HR ID
+    List<JobOffer> findByCreatedByHrId(String hrId);
+
 }
 

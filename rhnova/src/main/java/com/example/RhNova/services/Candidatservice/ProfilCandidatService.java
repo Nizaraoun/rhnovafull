@@ -50,6 +50,7 @@ public class ProfilCandidatService {
         existing.setVille(newData.getVille());
         existing.setPays(newData.getPays());
         existing.setCodePostal(newData.getCodePostal());
+        existing.setPhoneNumber(newData.getPhoneNumber());
         existing.setProfession(newData.getProfession());
         existing.setFormations(newData.getFormations());
         existing.setExperiences(newData.getExperiences());

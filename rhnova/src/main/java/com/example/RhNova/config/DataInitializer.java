@@ -1,5 +1,5 @@
 package com.example.RhNova.config;
-
+                           
 import com.example.RhNova.model.enums.Role;
 import com.example.RhNova.model.entity.User;
 import com.example.RhNova.repositories.UserRepository;

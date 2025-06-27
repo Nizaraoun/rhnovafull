@@ -1,0 +1,189 @@
+<div class="leave-requests-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Chargement des demandes de congé...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !isLoading">
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ error }}
+      <button class="btn btn-sm btn-outline-danger ml-2" (click)="refreshData()">
+        <i class="fas fa-redo"></i> Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !error">
+    <div class="header">
+      <div class="header-info">
+        <h2>Demandes de Congé</h2>
+        <div class="stats-summary">
+          <span class="stat-item">
+            <i class="fas fa-clock"></i>
+            {{ getPendingCount() }} en attente
+          </span>
+          <span class="stat-item urgent" *ngIf="getUrgentCount() > 0">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ getUrgentCount() }} urgent(s)
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-filters">
+        <select [(ngModel)]="selectedStatus" (ngModelChange)="onStatusFilterChange()" class="form-control">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+        
+        <select [(ngModel)]="selectedTeam" (ngModelChange)="onTeamFilterChange()" class="form-control">
+          <option value="all">Toutes les équipes</option>
+          <option *ngFor="let team of getTeams()" [value]="team">
+            {{ team }}
+          </option>
+        </select>
+
+        <button class="btn btn-outline-primary" (click)="refreshData()" title="Actualiser">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+
+  <div class="requests-grid">
+    <div *ngFor="let request of filteredRequests" class="request-card" [class.urgent]="request.priority === 'Urgent'">
+      <div class="card-header">
+        <div class="employee-info">
+          <img [src]="request.employeeAvatar" [alt]="request.employeeName" class="employee-avatar">
+          <div class="employee-details">
+            <h4>{{ request.employeeName }}</h4>
+            <span class="team-badge">{{ request.team }}</span>
+          </div>
+        </div>
+        
+        <div class="request-status">
+          <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+            {{ request.status }}
+          </span>
+          <span class="priority-badge" [ngClass]="getPriorityClass(request.priority)" *ngIf="request.priority === 'Urgent'">
+            <i class="fas fa-exclamation-triangle"></i>
+            Urgent
+          </span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="leave-info">
+          <div class="leave-type">
+            <i class="fas fa-calendar-alt" [style.color]="getLeaveTypeColor(request.leaveType)"></i>
+            <span>{{ request.leaveType }}</span>
+          </div>
+          
+          <div class="leave-duration">
+            <div class="duration-detail">
+              <span class="label">Période:</span>
+              <span class="value">{{ formatDateRange(request.startDate, request.endDate) }}</span>
+            </div>
+            <div class="duration-detail">
+              <span class="label">Durée:</span>
+              <span class="value">{{ request.totalDays }} jour(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="leave-reason">
+          <h5>Motif:</h5>
+          <p>{{ request.reason }}</p>
+        </div>
+
+        <div class="submission-info">
+          <span class="submitted-date">
+            Soumis le {{ request.submittedDate | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+
+        <div class="manager-notes" *ngIf="request.managerNotes">
+          <h5>Notes du manager:</h5>
+          <p>{{ request.managerNotes }}</p>
+        </div>
+      </div>
+
+      <div class="card-actions" *ngIf="request.status === 'Pending'">
+        <button class="btn btn-success" (click)="approveRequest(request)">
+          <i class="fas fa-check"></i>
+          Approuver
+        </button>
+        <button class="btn btn-danger" (click)="rejectRequest(request)">
+          <i class="fas fa-times"></i>
+          Refuser
+        </button>
+      </div>
+
+      <div class="card-result" *ngIf="request.status !== 'Pending'">
+        <div class="result-info" [ngClass]="getStatusClass(request.status)">
+          <i class="fas" [ngClass]="request.status === 'Approved' ? 'fa-check-circle' : 'fa-times-circle'"></i>
+          <span>{{ request.status === 'Approved' ? 'Demande approuvée' : 'Demande refusée' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredRequests.length === 0">
+    <div class="empty-content">
+      <i class="fas fa-calendar-check"></i>
+      <h3>Aucune demande trouvée</h3>
+      <p>Il n'y a actuellement aucune demande de congé correspondant aux filtres sélectionnés.</p>
+    </div>
+  </div>
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <h3>Statistiques rapides</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon pending">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getPendingCount() }}</div>
+            <div class="stat-label">En attente</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon approved">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getApprovedCount() }}</div>
+            <div class="stat-label">Approuvées</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon rejected">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getRejectedCount() }}</div>
+            <div class="stat-label">Refusées</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <i class="fas fa-calendar"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalDays() }}</div>
+            <div class="stat-label">Jours total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,226 @@
+<div class="my-tasks">  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Mes Tâches</h1>
+      <p>Consulter et mettre à jour le progrès de vos tâches assignées</p>
+    </div>
+  </div>
+  <!-- Task Statistics -->
+  <div class="task-stats">
+    <div class="stat-card">
+      <div class="stat-number">{{ getTotalTasks() }}</div>
+      <div class="stat-label">Total Tâches</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-number">{{ getTaskCount('Pending') }}</div>
+      <div class="stat-label">En Attente</div>
+    </div>
+    <div class="stat-card in-progress">
+      <div class="stat-number">{{ getTaskCount('In Progress') }}</div>
+      <div class="stat-label">En Cours</div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-number">{{ getTaskCount('Completed') }}</div>
+      <div class="stat-label">Terminées</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>      <input 
+        type="text" 
+        placeholder="Rechercher des tâches..." 
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      >
+    </div>
+    
+    <div class="filter-selects">      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+        <option value="all">Tous les Statuts</option>
+        <option value="Pending">En Attente</option>
+        <option value="In Progress">En Cours</option>
+        <option value="Completed">Terminées</option>
+      </select>
+      
+      <select [(ngModel)]="priorityFilter" (change)="applyFilters()" class="filter-select">
+        <option value="all">Toutes les Priorités</option>
+        <option value="High">Haute</option>
+        <option value="Medium">Moyenne</option>
+        <option value="Low">Basse</option>
+      </select>
+    </div>
+  </div>
+  <!-- Tasks List -->
+  <div class="tasks-container" *ngIf="!isLoading">
+    <div class="task-item" *ngFor="let task of filteredTasks">
+      <div class="task-header">
+        <h3>{{ task.title }}</h3>
+        <div class="task-badges">
+          <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+            {{ task.priority }}
+          </span>
+          <span class="status-badge" [ngClass]="getStatusClass(task.status)">
+            {{ task.status }}
+          </span>
+        </div>
+      </div>
+      
+      <p class="task-description">{{ task.description }}</p>
+      
+      <div class="task-meta">        <div class="meta-item">
+          <strong>Assignée par :</strong> {{ task.assignedBy }}
+        </div>
+        <div class="meta-item">
+          <strong>Date d'échéance :</strong> {{ task.dueDate | date:'medium' }}
+          <span class="due-status" [ngClass]="{ 'overdue': isOverdue(task.dueDate), 'due-soon': getDaysUntilDue(task.dueDate) <= 3 && getDaysUntilDue(task.dueDate) > 0 }">
+            <ng-container *ngIf="isOverdue(task.dueDate)">
+              <!-- (En retard de {{ Math.abs(getDaysUntilDue(task.dueDate)) }} jours) -->
+            </ng-container>
+            <ng-container *ngIf="!isOverdue(task.dueDate) && getDaysUntilDue(task.dueDate) <= 3 && getDaysUntilDue(task.dueDate) > 0">
+              (Échéance dans {{ getDaysUntilDue(task.dueDate) }} jours)
+            </ng-container>
+          </span>
+        </div>
+        <div class="meta-item">
+          <strong>Progrès :</strong> {{ task.progress }}%
+        </div>
+      </div>
+      
+      <div class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="task.progress"></div>
+        </div>
+        <div class="progress-percentage">{{ task.progress }}%</div>
+      </div>
+      
+      <div class="task-actions">
+        <div class="status-actions">          <button 
+            class="status-btn pending" 
+            (click)="updateTaskStatus(task.id, 'Pending')"
+            [disabled]="task.status === 'Pending'"
+          >
+            Marquer En Attente
+          </button>
+          <button 
+            class="status-btn in-progress" 
+            (click)="updateTaskStatus(task.id, 'In Progress')"
+            [disabled]="task.status === 'In Progress'"
+          >
+            Commencer
+          </button>
+          <button 
+            class="status-btn completed" 
+            (click)="updateTaskStatus(task.id, 'Completed')"
+            [disabled]="task.status === 'Completed'"
+          >
+            Marquer Terminée
+          </button>
+        </div>
+        
+        <button class="btn btn-primary" (click)="openUpdateModal(task)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Mettre à jour le Progrès
+        </button>
+      </div>
+      
+      <!-- Comments Section -->
+      <div class="comments-section" *ngIf="task.comments.length > 0">
+        <h4>Commentaires de Progrès :</h4>
+        <div class="comments-list">
+          <div class="comment-item" *ngFor="let comment of task.comments">
+            <div class="comment-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <span>{{ comment }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredTasks.length === 0">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14,2 14,8 20,8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>    <h3>Aucune tâche trouvée</h3>
+    <p>Vous n'avez aucune tâche assignée ou elles ne correspondent pas à vos filtres.</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-spinner"></div>    <h3>Chargement de vos tâches...</h3>
+    <p>Veuillez patienter pendant que nous récupérons vos tâches assignées.</p>
+  </div>
+
+  <!-- Update Progress Modal -->
+  <div class="modal-overlay" *ngIf="showUpdateModal" (click)="closeUpdateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Mettre à jour le Progrès de la Tâche</h2>
+        <button class="close-btn" (click)="closeUpdateModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedTask">
+        <div class="task-info">
+          <h3>{{ selectedTask.title }}</h3>
+          <p>{{ selectedTask.description }}</p>
+        </div>
+        
+        <div class="progress-update">
+          <label for="progress">Pourcentage de Progrès ({{ newProgress }}%)</label>
+          <input 
+            type="range" 
+            id="progress" 
+            min="0" 
+            max="100" 
+            step="5"
+            [(ngModel)]="newProgress"
+            class="progress-slider"
+          >
+          <div class="progress-display">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="newProgress"></div>
+            </div>
+            <span class="progress-text">{{ newProgress }}%</span>
+          </div>
+        </div>
+        
+        <div class="comment-section">          <label for="comment">Ajouter un Commentaire de Progrès (Optionnel)</label>
+          <textarea 
+            id="comment" 
+            [(ngModel)]="newComment" 
+            placeholder="Décrivez ce que vous avez accompli ou les défis rencontrés..."
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="status-info">
+          <p><strong>Le statut sera mis à jour vers :</strong></p>
+          <span class="status-preview" [ngClass]="getStatusClass(newProgress === 0 ? 'Pending' : newProgress === 100 ? 'Completed' : 'In Progress')">
+            {{ newProgress === 0 ? 'Pending' : newProgress === 100 ? 'Completed' : 'In Progress' }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="modal-actions">        <button class="btn btn-outline" (click)="closeUpdateModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="updateTaskProgress()">Mettre à jour la Tâche</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+<div class="team-view-container">
+  <div class="team-header" *ngIf="currentTeam">
+    <div class="team-info">
+      <h2>{{ currentTeam.name }}</h2>
+      <p class="team-description">{{ currentTeam.description }}</p>
+      <div class="team-meta">
+        <div class="meta-item">
+          <i class="fas fa-user-tie"></i>
+          <span>Manager : {{ currentTeam.manager }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-calendar"></i>
+          <span>Créée le {{ currentTeam.createdDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-users"></i>
+          <span>{{ currentTeam.members.length }} membres</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-stats">
+      <div class="stat-card">
+        <div class="stat-icon online">
+          <i class="fas fa-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getOnlineMembers() }}</div>
+          <div class="stat-label">En ligne</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon workload">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getAverageWorkload() }}%</div>
+          <div class="stat-label">Charge moyenne</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon projects">
+          <i class="fas fa-project-diagram"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ currentTeam.projects.length }}</div>
+          <div class="stat-label">Projets</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Section -->
+  <div class="projects-section" *ngIf="currentTeam">
+    <h3>Projets en cours</h3>
+    <div class="projects-grid">
+      <div *ngFor="let project of currentTeam.projects" class="project-card">
+        <div class="project-icon">
+          <i class="fas fa-folder-open"></i>
+        </div>
+        <div class="project-name">{{ project }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Members Section -->
+  <div class="members-section" *ngIf="currentTeam">
+    <div class="section-header">
+      <h3>Membres de l'équipe</h3>
+      <div class="members-summary">
+        {{ currentTeam.members.length }} membres • {{ getOnlineMembers() }} en ligne
+      </div>
+    </div>
+
+    <div class="members-grid">
+      <div *ngFor="let member of currentTeam.members" 
+           class="member-card" 
+           [class.current-user]="isCurrentUser(member.name)">
+        
+        <div class="member-header">
+          <div class="member-avatar-section">
+            <div class="avatar-container">
+            </div>
+            <div class="member-basic-info">
+              <h4>
+                {{ member.name }}
+                <span class="current-user-badge" *ngIf="isCurrentUser(member.name)">
+                  <i class="fas fa-star"></i>
+                  Vous
+                </span>
+              </h4>
+              <p class="position">{{ member.position }}</p>
+              <p class="email">{{ member.email }}</p>
+            </div>
+          </div>
+
+          
+        </div>
+
+        <div class="member-details">
+          
+
+          <div class="join-info">
+            <i class="fas fa-clock"></i>
+            <span>Dans l'équipe depuis {{ formatJoinDate(member.joinDate) }}</span>
+          </div>
+
+          <div class="skills-section">
+            <h5>Compétences</h5>
+            <div class="skills-tags">
+              <span *ngFor="let skill of member.skills" class="skill-tag">
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-actions" *ngIf="!isCurrentUser(member.name)">
+         
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions" *ngIf="currentTeam">
+    <h3>Actions rapides</h3>
+    <div class="actions-grid">      <button class="action-card" routerLink="/team-member/tasks">
+        <i class="fas fa-tasks"></i>
+        <span>Mes tâches</span>
+      </button>
+      <button class="action-card" routerLink="/team-member/request-leave">
+        <i class="fas fa-calendar-plus"></i>
+        <span>Demander un congé</span>
+      </button>
+      <button class="action-card">
+        <i class="fas fa-comments"></i>
+        <span>Chat d'équipe</span>
+      </button>
+      <button class="action-card">
+        <i class="fas fa-calendar"></i>
+        <span>Planning équipe</span>
+      </button>
+    </div>
+  </div>
+  <!-- Loading/Error States -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3>Chargement des informations de l'équipe...</h3>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!currentTeam && !isLoading">
+    <div class="empty-content">
+      <i class="fas fa-users"></i>
+      <h3>Aucune équipe trouvée</h3>
+      <p>Vous n'êtes pas encore assigné à une équipe.</p>
+    </div>
+  </div>
+</div>

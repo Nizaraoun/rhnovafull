@@ -35,7 +35,7 @@ export interface JobOfferDisplay {
 export interface JobOfferFilters {
   titre?: string;
   localisation?: string;
-  typedemploi?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
+  typedemploi?: 'FULL_TIME' | 'PART_TIME' | 'INTERNSHIP';
   page?: number;
   size?: number;
   sort?: string;

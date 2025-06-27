@@ -33,5 +33,7 @@ public class JobOffer {
 
     private boolean archived = false; // Par défaut non archivée
 
+    private String createdByHrId; // ID of the HR who created this job offer
+
     
 }

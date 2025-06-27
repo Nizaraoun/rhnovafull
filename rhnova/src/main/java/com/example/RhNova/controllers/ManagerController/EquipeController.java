@@ -1,10 +1,13 @@
 package com.example.RhNova.controllers.ManagerController;
 
 import com.example.RhNova.dto.Equipedto;
+import com.example.RhNova.dto.DetailedEquipeDto;
 import com.example.RhNova.dto.userdto;
 import com.example.RhNova.services.Managerservice.EquipeService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,5 +70,50 @@ public class EquipeController {
         return ResponseEntity.ok(membres);
     }
 
+    @GetMapping("/my-team")
+    public ResponseEntity<DetailedEquipeDto> getMyTeamDetails() {
+        // Get current user's email from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        System.out.println("Utilisateur trouvé: " + userEmail);
 
+        DetailedEquipeDto teamDetails = equipeService.getMyTeamDetails(userEmail);
+        return ResponseEntity.ok(teamDetails);
+    }
+
+    @GetMapping("/my-team/members")
+    public ResponseEntity<List<userdto>> getMyTeamMembers() {
+        // Get current user's email from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+
+        DetailedEquipeDto teamDetails = equipeService.getMyTeamDetails(userEmail);
+        return ResponseEntity.ok(teamDetails.getMembres());
+    }
+
+    @GetMapping("/manager-details")
+    public ResponseEntity<List<DetailedEquipeDto>> getManagerTeamDetails() {
+        // Get current user's email from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String managerEmail = authentication.getName();
+
+        List<DetailedEquipeDto> managerTeamsDetails = equipeService.getManagerTeamsDetails(managerEmail);
+        return ResponseEntity.ok(managerTeamsDetails);
+    }
+
+    @GetMapping("/manager-details/single")
+    public ResponseEntity<DetailedEquipeDto> getManagerSingleTeamDetails() {
+        // Get current user's email from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String managerEmail = authentication.getName();
+
+        DetailedEquipeDto managerTeamDetails = equipeService.getManagerTeamDetails(managerEmail);
+        return ResponseEntity.ok(managerTeamDetails);
+    }
+
+    @GetMapping("/manager/{managerId}/team")
+    public ResponseEntity<DetailedEquipeDto> getTeamDetailsByManagerId(@PathVariable String managerId) {
+        DetailedEquipeDto teamDetails = equipeService.getTeamDetailsByManagerId(managerId);
+        return ResponseEntity.ok(teamDetails);
+    }
 }

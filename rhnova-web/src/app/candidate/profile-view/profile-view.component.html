@@ -1,0 +1,205 @@
+<div class="profile-display" *ngIf="!isLoading(); else loadingTemplate">
+  <div class="profile-container" *ngIf="currentProfile(); else noProfileTemplate">
+    
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-photo">
+        
+        <div class="profile-completion" *ngIf="showActions">
+          <div class="completion-circle" [style.--completion]="getProfileCompleteness() + '%'">
+            <span>{{ getProfileCompleteness() }}%</span>
+          </div>
+          <small>Profil Complet</small>
+        </div>
+      </div>
+      
+      <div class="profile-basic-info">        <h1 class="profile-name">
+          {{ currentProfile()?.userId || 'Profil' }}
+        </h1>
+        <h2 class="profile-title" *ngIf="currentProfile()?.profession">
+          {{ currentProfile()?.profession }}
+        </h2>
+        <div class="profile-location" *ngIf="currentProfile()?.ville || currentProfile()?.pays">
+          <i class="icon-location"></i>
+          <span>
+            {{ currentProfile()?.ville }}{{ currentProfile()?.ville && currentProfile()?.pays ? ', ' : '' }}{{ currentProfile()?.pays }}
+          </span>
+        </div>
+        <div class="profile-meta">
+          <span class="experience-info">{{ getExperienceYears() }}</span>          <span class="join-date" *ngIf="currentProfile()?.createdAt">
+            Membre depuis {{ formatDate(currentProfile()?.createdAt?.toString()) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="profile-actions" *ngIf="showActions">        <button 
+          class="btn btn-primary" 
+          (click)="onEditProfile()"
+          *ngIf="isOwnProfile()"
+        >
+          <i class="icon-edit"></i> Modifier le Profil
+        </button>
+       
+      </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- About Section -->
+      <div class="profile-section" *ngIf="currentProfile()?.description">
+        <h3>À Propos</h3>
+        <div class="section-content">
+          <p class="description">{{ currentProfile()?.description }}</p>
+        </div>
+      </div>
+
+      <!-- Personal Information -->
+      <div class="profile-section">
+        <h3>Informations Personnelles</h3>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item" *ngIf="currentProfile()?.dateDeNaissance">
+              <label>Date de Naissance</label>
+              <span>{{ formatDate(currentProfile()?.dateDeNaissance) }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentProfile()?.ville">
+              <label>Ville</label>
+              <span>{{ currentProfile()?.ville }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentProfile()?.pays">
+              <label>Pays</label>
+              <span>{{ currentProfile()?.pays }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentProfile()?.codePostal">
+              <label>Code Postal</label>
+              <span>{{ currentProfile()?.codePostal }}</span>
+            </div>
+          </div>
+        </div>
+      </div>      <!-- Skills & Competences -->
+      <div class="profile-section" *ngIf="currentProfile()?.competences?.length">
+        <h3>Compétences</h3>
+        <div class="section-content">
+          <div class="skills-grid">
+            <span 
+              class="skill-tag" 
+              *ngFor="let skill of currentProfile()?.competences"
+            >
+              {{ skill }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="profile-section" *ngIf="currentProfile()?.experiences?.length">
+        <h3>Expérience Professionnelle</h3>
+        <div class="section-content">
+          <div class="experience-list">
+            <div 
+              class="experience-item"   
+              *ngFor="let experience of formatMultilineList(currentProfile()?.experiences)"
+            >
+              <div class="experience-content">
+                <p>{{ experience }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="profile-section" *ngIf="currentProfile()?.formations?.length">
+        <h3>Formation</h3>
+        <div class="section-content">
+          <div class="education-list">
+            <div 
+              class="education-item" 
+              *ngFor="let formation of formatMultilineList(currentProfile()?.formations)"
+            >
+              <div class="education-content">
+                <p>{{ formation }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Languages -->
+      <div class="profile-section" *ngIf="currentProfile()?.langues?.length">
+        <h3>Langues</h3>
+        <div class="section-content">
+          <div class="languages-grid">
+            <div 
+              class="language-item" 
+              *ngFor="let langue of currentProfile()?.langues"
+            >
+              <span class="language-name">{{ langue }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="profile-section" *ngIf="currentProfile()?.certifications?.length">
+        <h3>Certifications</h3>
+        <div class="section-content">
+          <div class="certifications-list">
+            <div 
+              class="certification-item" 
+              *ngFor="let certification of formatMultilineList(currentProfile()?.certifications)"
+            >
+              <div class="certification-content">
+                <i class="icon-certificate"></i>
+                <span>{{ certification }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div class="profile-section" *ngIf="currentProfile()?.projets?.length">
+        <h3>Projets</h3>
+        <div class="section-content">
+          <div class="projects-list">
+            <div 
+              class="project-item" 
+              *ngFor="let projet of formatMultilineList(currentProfile()?.projets)"
+            >
+              <div class="project-content">
+                <i class="icon-project"></i>
+                <span>{{ projet }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+  </div>
+</div>
+
+<!-- No Profile Template -->
+<ng-template #noProfileTemplate>  <div class="no-profile">
+    <div class="no-profile-content">
+      <i class="icon-user-x"></i>
+      <h3>Aucun Profil Trouvé</h3>
+      <p *ngIf="error()">{{ error() }}</p>
+      <p *ngIf="!error()">Cet utilisateur n'a pas encore créé de profil.</p>
+      <button 
+        class="btn btn-primary" 
+        (click)="onEditProfile()"
+        *ngIf="isOwnProfile() && showActions"
+      >
+        Créer un Profil
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Loading Template -->
+<ng-template #loadingTemplate>  <div class="loading-profile">
+    <div class="loading-spinner"></div>
+    <p>Chargement du profil...</p>
+  </div>
+</ng-template>

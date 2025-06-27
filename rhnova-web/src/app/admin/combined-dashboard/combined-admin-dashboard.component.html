@@ -1,0 +1,214 @@
+<div class="admin-dashboard">
+  <!-- Error Banner -->
+  <div *ngIf="error()" class="error-banner">
+    <div class="error-content">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <span>{{ error() }}</span>
+      <button (click)="refreshDashboard()" class="error-retry-btn">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="dashboard-title">Admin Dashboard</h1>
+      <p class="dashboard-subtitle">Complete system overview and management</p>
+    </div>
+    <div class="dashboard-actions">
+      <button class="action-btn secondary" (click)="refreshDashboard()" [disabled]="isLoading()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M3 21v-5h5"/>
+        </svg>
+        {{ isLoading() ? 'Loading...' : 'Refresh' }}
+      </button>
+      <button class="action-btn primary" routerLink="/admin/users">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <path d="M20 8v6"/>
+          <path d="M23 11h-6"/>
+        </svg>
+        Manage Users
+      </button>
+      <button class="action-btn secondary" routerLink="/admin/teams">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Manage Teams
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card" 
+         *ngFor="let card of statsCards()" 
+         [class]="'card-' + card.color">
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-icon" [innerHTML]="getSafeHtml(card.icon)"></div>
+          <div class="card-change" [class]="'change-' + card.changeType">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline *ngIf="card.changeType === 'increase'" points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline *ngIf="card.changeType === 'decrease'" points="1 18 8.5 10.5 13.5 15.5 23 6"/>
+              <line *ngIf="card.changeType === 'neutral'" x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {{ card.change }}
+          </div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-value">{{ card.value }}</h3>
+          <p class="card-title">{{ card.title }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Quick Actions -->
+  <div class="admin-actions-section">
+    <h2>Quick Actions</h2>
+    <div class="actions-grid">
+      <div class="action-card" routerLink="/admin/users">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="m13 7 5 5"/>
+            <path d="m17 7-5 5"/>
+          </svg>
+        </div>
+        <h3>User Management</h3>
+        <p>Add, edit, and manage system users</p>
+      </div>
+
+      <div class="action-card" routerLink="/admin/teams">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3>Team Management</h3>
+        <p>Create and manage teams</p>
+      </div>
+
+      <div class="action-card" routerLink="/tasks">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3>Task Management</h3>
+        <p>Assign and monitor tasks</p>
+      </div>
+
+      <div class="action-card" routerLink="/admin/reports">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
+        <h3>Reports</h3>
+        <p>View system reports and analytics</p>
+      </div>
+
+     
+
+      <div class="action-card" routerLink="/admin/settings">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6"/>
+            <path d="m21 12-6 0m-6 0-6 0"/>
+          </svg>
+        </div>
+        <h3>System Settings</h3>
+        <p>Configure system parameters</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Recent Activities -->
+    <div class="dashboard-widget activity-widget">
+      <div class="widget-header">
+        <h3>Recent Activities</h3>
+        <button class="view-all-btn">View All</button>
+      </div>
+      <div class="activity-list">        <div class="activity-item" *ngFor="let activity of recentActivities()">
+          <!-- <div class="activity-avatar">
+            <img [src]="onImageError($event)" />
+          </div> -->
+          <div class="activity-content">
+            <p class="activity-text">
+              <strong>{{ activity.user }}</strong> {{ activity.action }}
+            </p>
+            <span class="activity-time">{{ activity.time }}</span>
+          </div>
+          <div class="activity-status" [class]="'status-' + activity.status">
+            {{ activity.status }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Analytics Chart -->
+    <div class="dashboard-widget chart-widget">
+      <div class="widget-header">
+        <h3>System Growth</h3>
+        <div class="chart-period">
+          <button class="period-btn active">7D</button>
+          <button class="period-btn">30D</button>
+          <button class="period-btn">90D</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <!-- Loading state -->
+        <div *ngIf="isLoading()" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading chart data...</p>
+        </div>
+        
+        <!-- Error state -->
+        <div *ngIf="error()" class="error-state">
+          <p>{{ error() }}</p>
+          <button (click)="refreshDashboard()" class="retry-btn">Retry</button>
+        </div>
+        
+        <!-- Chart with dynamic data -->
+        <div *ngIf="!isLoading() && !error()" class="simple-chart">
+          <div class="chart-bars">
+            <div class="chart-bar" 
+                 *ngFor="let data of employeeGrowthData()" 
+                 [style.height.%]="(data.count / getMaxCount()) * 100"
+                 [title]="data.day + ': ' + data.count + ' users'">
+            </div>
+          </div>
+          <div class="chart-labels">
+            <span *ngFor="let data of employeeGrowthData()">{{ data.day }}</span>
+          </div>
+        </div>
+      </div>
+    </div>    <!-- Pending Admin Tasks -->
+
+    
+  </div>
+</div>

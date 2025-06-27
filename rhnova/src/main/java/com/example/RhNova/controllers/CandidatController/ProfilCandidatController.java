@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/profil")
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ProfilCandidatController {
 
     @Autowired

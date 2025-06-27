@@ -1,0 +1,180 @@
+<div class="candidate-dashboard"></div>  <!-- Welcome Section -->
+  <div class="welcome-section">
+    <div class="welcome-content">
+      <h1>Bon retour, {{ currentUser()?.name || 'Candidat' }}!</h1>
+      <p>Suivez vos candidatures et découvrez de nouvelles opportunités</p>
+    </div>
+    <div class="profile-completion" *ngIf="profileCompletionPercentage() < 100">
+      <div class="completion-card">
+        <h3>Complétez Votre Profil</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="profileCompletionPercentage()"></div>
+        </div>
+        <p>{{ profileCompletionPercentage() }}% complet</p>
+        <a routerLink="/candidate/profile" class="btn btn-primary">Compléter Maintenant</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon applications">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+        </svg>
+      </div>      <div class="stat-content">
+        <div class="stat-number">{{ applications().length }}</div>
+        <div class="stat-label">Total Candidatures</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pending">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12,6 12,12 16,14"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ getPendingApplications() }}</div>
+        <div class="stat-label">En Attente de Révision</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon interviews">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 11l-2-2"/>
+          <path d="M23 13l-2 2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ getInterviewCount() }}</div>
+        <div class="stat-label">Entretiens Programmés</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon jobs">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ recentJobs().length }}</div>
+        <div class="stat-label">Nouvelles Offres d'Emploi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">    <!-- Recent Job Offers -->
+    <div class="content-card">
+      <div class="card-header">
+        <h2>Offres d'Emploi Récentes</h2>
+        <a routerLink="/candidate/jobs" class="view-all-link">Voir Tout</a>
+      </div>
+      <div class="jobs-list">        <div 
+          *ngFor="let job of recentJobs().slice(0, 5)" 
+          class="job-item"
+        >
+          <div class="job-info">
+            <h3 class="job-title">{{ job.title }}</h3>
+            <p class="job-company">{{ job.department }}</p>
+            <div class="job-meta">
+              <span class="location">{{ job.location }}</span>
+              <span class="type">{{ job.type | titlecase }}</span>
+              <span class="posted">{{ getTimeAgo(job.postedDate) }}</span>
+            </div>
+          </div>
+          <div class="job-actions">
+            <span class="salary">{{ job.salary }}</span>
+            <button class="btn btn-sm btn-primary" (click)="applyForJob(job)">
+              Postuler
+            </button>
+          </div>
+        </div>
+        
+        <div *ngIf="recentJobs().length === 0" class="empty-state">
+          <p>Aucune offre d'emploi récente disponible</p>
+        </div>
+      </div>
+    </div>    <!-- Recent Applications -->
+    <div class="content-card">
+      <div class="card-header">
+        <h2>Candidatures Récentes</h2>
+        <a routerLink="/candidate/applications" class="view-all-link">Voir Tout</a>
+      </div>
+      <div class="applications-list">
+        <div 
+          *ngFor="let app of applications().slice(0, 5)" 
+          class="application-item"
+        >
+          <div class="app-info">
+            <h3 class="app-title">{{ app.jobTitle }}</h3>
+            <p class="app-company">{{ app.company }}</p>
+            <p class="app-date">Postulé {{ getTimeAgo(app.appliedDate) }}</p>
+          </div>
+          <div class="app-status">
+            <span class="status-badge" [class]="'status-' + app.status">
+              {{ getStatusLabel(app.status) }}
+            </span>
+          </div>
+        </div>
+        
+        <div *ngIf="applications().length === 0" class="empty-state">
+          <p>Aucune candidature pour le moment</p>
+          <a routerLink="/candidate/jobs" class="btn btn-primary">Parcourir les Emplois</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h2>Actions Rapides</h2>
+    <div class="actions-grid">
+      <a routerLink="/candidate/profile" class="action-card">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Mettre à Jour le Profil</h3>
+          <p>Gardez vos informations à jour</p>
+        </div>
+      </a>
+
+      <a routerLink="/candidate/cv" class="action-card">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Créer un CV</h3>
+          <p>Créez votre CV professionnel</p>
+        </div>
+      </a>
+
+      <a routerLink="/candidate/jobs" class="action-card">
+        <div class="action-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Parcourir les Emplois</h3>
+          <p>Trouvez votre prochaine opportunité</p>
+        </div>
+      </a>
+    </div>
+  </div>

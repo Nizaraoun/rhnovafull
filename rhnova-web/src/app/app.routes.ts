@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminGuard } from './shared/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -16,22 +17,32 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./layout/layout.component').then(c => c.LayoutComponent),
-    children: [
-      {
+    children: [      {
         path: 'dashboard',
-        loadComponent: () => import('./dashboard/dashboard.component').then(c => c.DashboardComponent)
-      },
-      {
+        loadComponent: () => import('./admin/combined-dashboard/combined-admin-dashboard.component').then(c => c.CombinedAdminDashboardComponent),
+        canActivate: [AdminGuard]
+      },{
         path: 'admin',
-        loadChildren: () => import('./admin/admin.routes').then(r => r.ADMIN_ROUTES)
-      },
-      {
+        loadChildren: () => import('./admin/admin.routes').then(r => r.ADMIN_ROUTES),
+        canActivate: [AdminGuard]
+      },{
         path: 'hr',
         loadChildren: () => import('./hr/hr.routes').then(r => r.HR_ROUTES)
+      },      {
+        path: 'candidate',
+        loadChildren: () => import('./candidate/candidate.routes').then(r => r.CANDIDATE_ROUTES)
       },
       {
+        path: 'manager',
+        loadChildren: () => import('./manager/manager.routes').then(r => r.MANAGER_ROUTES)
+      },
+      {
+        path: 'team-member',
+        loadChildren: () => import('./team-member/team-member.routes').then(r => r.TEAM_MEMBER_ROUTES)
+      },      {
         path: 'tasks',
-        loadComponent: () => import('./admin/tasks/tasks.component').then(c => c.TasksComponent)
+        loadComponent: () => import('./admin/tasks/tasks.component').then(c => c.TasksComponent),
+        canActivate: [AdminGuard]
       },
       {
         path: 'profile',

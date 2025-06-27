@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/candidatures")
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class CandidatureController {
 
     @Autowired
@@ -39,5 +39,17 @@ public class CandidatureController {
     public List<Candidaturedto> getCandidaturesByCandidat(@PathVariable String candidatId) {
         return candidatureService.getCandidaturesByCandidatId(candidatId);
     }
+
+    @GetMapping("/offre/{offreId}")
+    public List<Candidaturedto> getCandidaturesByOffre(@PathVariable String offreId) {
+        return candidatureService.getCandidaturesByOffreId(offreId);
+    }
+
+    @GetMapping("/rh/{rhId}")
+    public List<Candidaturedto> getCandidaturesByRH(@PathVariable String rhId) {
+        return candidatureService.getCandidaturesByRHId(rhId);
+    }
+
+  
 
 }

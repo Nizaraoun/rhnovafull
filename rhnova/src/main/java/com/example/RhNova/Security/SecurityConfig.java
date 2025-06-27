@@ -33,15 +33,15 @@ public class SecurityConfig {
                 // Allow authentication endpoints (except internal user creation)
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // Restrict internal user creation to HR and admin
-                .requestMatchers("/api/auth/create-internal-user").permitAll()
+                .requestMatchers("/api/auth/create-internal-user", "/api/hr/leaves/**").permitAll()
                 // .hasAnyRole("ADMIN", "RESPONSABLERH")
                 // Allow public job offers (for candidates to see)
                 .requestMatchers("/api/joboffers/all", "/api/joboffers/{id}").permitAll()
                 // Allow candidate registration and profile creation
-                .requestMatchers("/api/candidatures/**").permitAll()
+                .requestMatchers("/api/candidatures/**","/api/hr/candidatures/**","/api/hr/employees/**").permitAll()
                 .requestMatchers("/api/profil/**").permitAll()
-                // Protect admin endpoints
-                .requestMatchers("/api/admin/**").permitAll()
+                // Protect admin endpoints  
+                .requestMatchers("/api/admin/**","/api/conges/**").permitAll()
                 .requestMatchers("/api/dashboard/**").permitAll()
                 // hasRole("ADMIN")
                 // Protect HR endpoints
@@ -52,7 +52,7 @@ public class SecurityConfig {
                 // Protect Manager endpoints
                 .requestMatchers("/api/equipes/**").permitAll()
                 // hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/api/taches/**").permitAll()
+                .requestMatchers("/api/taches/**","/api/team-member/**").permitAll()
                 // hasAnyRole("ADMIN", "MANAGER", "MEMBRE_EQUIPE")
                 // Protect candidate endpoints
                 .requestMatchers("/api/candidats/**").

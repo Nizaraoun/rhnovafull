@@ -30,6 +30,16 @@ public class DemandeConge {
 
     private LocalDate dateDebut;
     private LocalDate dateFin;
+    
+    private String raison; // Reason for leave
+    
+    private int nombreJours; // Total days calculated
+    
+    private LocalDate dateCreation; // Date when leave request was created
+    
+    private LocalDate dateValidation; // Date when leave was approved/rejected
+    
+    private String commentaireValidateur; // HR/Manager comments
 
 
 }

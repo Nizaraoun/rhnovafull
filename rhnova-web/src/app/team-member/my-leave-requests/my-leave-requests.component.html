@@ -1,0 +1,246 @@
+<div class="my-leave-requests-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="fas fa-calendar-check"></i>
+        Mes Demandes de Congé
+      </h1>
+      <p class="page-subtitle">Consultez l'état de toutes vos demandes de congé</p>
+    </div>
+    <div class="header-actions">
+      <button 
+        class="btn btn-primary" 
+        (click)="goToRequestForm()"
+        title="Nouvelle demande">
+        <i class="fas fa-plus"></i>
+        Nouvelle Demande
+      </button>
+      <button 
+        class="btn btn-outline-secondary" 
+        (click)="refreshData()"
+        [disabled]="isLoading"
+        title="Actualiser">
+        <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card pending">
+        <div class="stat-icon">
+          <i class="fas fa-hourglass-half"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getPendingCount() }}</h3>
+          <p>En Attente</p>
+        </div>
+      </div>
+      
+      <div class="stat-card approved">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getApprovedCount() }}</h3>
+          <p>Acceptées</p>
+        </div>
+      </div>
+      
+      <div class="stat-card rejected">
+        <div class="stat-icon">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getRejectedCount() }}</h3>
+          <p>Refusées</p>
+        </div>
+      </div>
+      
+      <div class="stat-card total-days">
+        <div class="stat-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getTotalDays() }}</h3>
+          <p>Jours Accordés</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="filter-group">
+        <label for="statusFilter">Filtrer par statut :</label>
+        <select 
+          id="statusFilter"
+          class="form-select"
+          [(ngModel)]="selectedStatus" 
+          (change)="onStatusFilterChange()">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="typeFilter">Filtrer par type :</label>
+        <select 
+          id="typeFilter"
+          class="form-select"
+          [(ngModel)]="selectedType" 
+          (change)="onTypeFilterChange()">
+          <option *ngFor="let option of typeOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="results-count">
+        {{ filteredRequests.length }} demande(s) trouvée(s)
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Chargement de vos demandes de congé...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-section">
+    <div class="error-message">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Erreur de chargement</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="refreshData()">        <i class="fas fa-retry"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Leave Requests List -->
+  <div *ngIf="!isLoading && !error" class="requests-section">
+    <!-- Empty State -->
+    <div *ngIf="filteredRequests.length === 0" class="empty-state">
+      <div class="empty-content">
+        <i class="fas fa-calendar-times"></i>
+        <h3>Aucune demande trouvée</h3>
+        <p *ngIf="leaveRequests.length === 0">
+          Vous n'avez encore soumis aucune demande de congé.
+        </p>
+        <p *ngIf="leaveRequests.length > 0">
+          Aucune demande ne correspond aux filtres sélectionnés.
+        </p>
+        <button 
+          *ngIf="leaveRequests.length === 0"
+          class="btn btn-primary" 
+          (click)="goToRequestForm()">
+          <i class="fas fa-plus"></i>
+          Créer ma première demande
+        </button>
+      </div>
+    </div>
+
+    <!-- Requests Grid -->
+    <div *ngIf="filteredRequests.length > 0" class="requests-grid">
+      <div 
+        *ngFor="let request of filteredRequests" 
+        class="request-card"
+        [class]="request.statusClass">
+        
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="card-title">
+            <div 
+              class="leave-type-badge" 
+              [style.background-color]="getLeaveTypeColor(request.leaveType)">
+              {{ request.leaveType }}
+            </div>
+            <div class="request-dates">
+              {{ formatDateRange(request.startDate, request.endDate) }}
+            </div>
+          </div>
+          <div class="card-status">
+            <span class="status-badge" [class]="request.statusClass">
+              <i [class]="request.statusIcon"></i>
+              {{ request.status }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="request-details">
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-calendar-day"></i>
+                Durée :
+              </span>
+              <span class="detail-value">
+                {{ request.totalDays }} jour{{ request.totalDays > 1 ? 's' : '' }}
+              </span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-comment"></i>
+                Motif :
+              </span>
+              <span class="detail-value">{{ request.reason }}</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-paper-plane"></i>
+                Soumise le :
+              </span>
+              <span class="detail-value">
+                {{ request.submittedDate | date:'dd/MM/yyyy à HH:mm' }}
+              </span>
+            </div>
+            
+            <div *ngIf="request.managerName" class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-user-tie"></i>
+                Manager :
+              </span>
+              <span class="detail-value">{{ request.managerName }}</span>
+            </div>
+            
+            <div *ngIf="request.validationDate" class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-clock"></i>
+                {{ request.status === 'Acceptée' ? 'Acceptée le' : 'Refusée le' }} :
+              </span>
+              <span class="detail-value">
+                {{ request.validationDate | date:'dd/MM/yyyy à HH:mm' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manager Notes (if any) -->
+        <div *ngIf="request.managerNotes" class="card-footer">
+          <div class="manager-notes">
+            <div class="notes-header">
+              <i class="fas fa-comment-dots"></i>
+              Commentaire du manager :
+            </div>
+            <div class="notes-content">
+              {{ request.managerNotes }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

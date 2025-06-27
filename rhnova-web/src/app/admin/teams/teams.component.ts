@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Team, AdminService, TeamRequest } from '../services/admin.service';
 import { UserDto } from '../../shared/models';
 import { Role } from '../../shared/models/role.model';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-teams',
@@ -21,20 +22,23 @@ export class TeamsComponent implements OnInit {
   showModal = false;
   showMemberModal = false;
   isEditing = false;
-  teamForm: FormGroup;
-  selectedTeam: Team | null = null;
-  selectedTeamMembers: UserDto[] = [];
-  availableUsers: UserDto[] = [];  constructor(
+  teamForm: FormGroup;  selectedTeam: Team | null = null;  selectedTeamMembers: UserDto[] = [];
+  availableUsers: UserDto[] = [];
+  currentUserRole: string | null = null;
+  readonly Role = Role; // Make Role enum available in template
+
+  constructor(
     private adminService: AdminService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {
     this.teamForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
       description: [''],
       managerId: ['', Validators.required]
     });
-  }
-  ngOnInit(): void {
+  }  ngOnInit(): void {
+    this.currentUserRole = this.authService.getUserRole();
     this.loadTeams();
     this.loadUsers();
   }
@@ -61,13 +65,13 @@ export class TeamsComponent implements OnInit {
     } else {
       this.availableUsers = eligibleUsers;
     }
-  }
-  loadTeams(): void {
+  }  loadTeams(): void {
     this.isLoading = true;
     this.adminService.getAllTeams().subscribe({
       next: (teams: Team[]) => {
+        // Managers, Admins and HR can see all teams
         this.teams = teams;
-        this.filteredTeams = teams;
+        this.filteredTeams = this.teams;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -75,7 +79,7 @@ export class TeamsComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }  filterTeams(): void {
+  }filterTeams(): void {
     this.filteredTeams = this.teams.filter(team => 
       !this.searchTerm || 
       team.nom.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -241,7 +245,6 @@ export class TeamsComponent implements OnInit {
   canJoinTeam(user: UserDto): boolean {
     return user.role === Role.MEMBRE_EQUIPE;
   }
-
   getRoleDisplayName(role: Role): string {
     switch (role) {
       case Role.ADMIN:
@@ -257,5 +260,28 @@ export class TeamsComponent implements OnInit {
       default:
         return role;
     }
+  }
+  canCreateTeam(): boolean {
+    return this.currentUserRole === Role.ADMIN || 
+           this.currentUserRole === Role.RESPONSABLERH || 
+           this.currentUserRole === Role.MANAGER;
+  }
+
+  canEditTeam(): boolean {
+    return this.currentUserRole === Role.ADMIN || 
+           this.currentUserRole === Role.RESPONSABLERH || 
+           this.currentUserRole === Role.MANAGER;
+  }
+
+  canDeleteTeam(): boolean {
+    return this.currentUserRole === Role.ADMIN || 
+           this.currentUserRole === Role.RESPONSABLERH || 
+           this.currentUserRole === Role.MANAGER;
+  }
+
+  canManageMembers(): boolean {
+    return this.currentUserRole === Role.ADMIN || 
+           this.currentUserRole === Role.RESPONSABLERH || 
+           this.currentUserRole === Role.MANAGER;
   }
 }

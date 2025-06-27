@@ -1,6 +1,7 @@
 package com.example.RhNova.model.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.example.RhNova.model.enums.Priorite;
 import com.example.RhNova.model.enums.StatutTache;
@@ -9,7 +10,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import lombok.Data;
-import com.example.RhNova.model.entity.User;
 
 @Document(collection = "taches")
 @Data
@@ -34,5 +34,12 @@ public class Tache {
     private Integer evaluation; // Ex : 0 à 10
 
     @DBRef
-    private User membre;
+    private User membre; // Assigned team member
+
+    @DBRef
+    private User createdBy; // User who created the task (usually manager)
+    
+    private LocalDateTime dateCreation; // When the task was created
+    
+    private LocalDateTime lastUpdated; // When the task was last updated
 }

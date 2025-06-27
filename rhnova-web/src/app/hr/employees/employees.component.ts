@@ -2,22 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-interface Employee {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  department: string;
-  position: string;
-  status: 'active' | 'inactive' | 'on-leave';
-  joinDate: Date;
-  salary: number;
-  avatar: string;
-  skills: string[];
-  manager: string;
-}
+import { EmployeeApiService, Employee, CreateEmployeeDto, UpdateEmployeeDto } from './services/employee-api.service';
 
 @Component({
   selector: 'app-employees',
@@ -29,7 +14,6 @@ interface Employee {
 export class EmployeesComponent implements OnInit {
 
 
-
   employees: Employee[] = [];
   filteredEmployees: Employee[] = [];
   searchForm: FormGroup;
@@ -38,11 +22,15 @@ export class EmployeesComponent implements OnInit {
   editingEmployee: Employee | null = null;
   selectedDepartment = '';
   selectedStatus = '';
+  isLoading = false;
+  error: string | null = null;
 
   departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations'];
   positions = ['Manager', 'Senior Developer', 'Junior Developer', 'Analyst', 'Specialist'];
-
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    public employeeApiService: EmployeeApiService
+  ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
       department: [''],
@@ -74,57 +62,28 @@ export class EmployeesComponent implements OnInit {
   getOnLeaveEmployeesCount(): number {
     return this.employees.filter(employee => employee.status === 'on-leave').length;
   }
-
   loadEmployees() {
-    // Mock data - replace with actual API call
-    this.employees = [
-      {
-        id: '1',
-        firstName: 'maryem',
-        lastName: 'Doe',
-        email: 'maryem.doe@rhnova.com',
-        phone: '+1 (555) 123-4567',
-        department: 'Engineering',
-        position: 'Senior Developer',
-        status: 'active',
-        joinDate: new Date('2023-01-15'),
-        salary: 75000,
-        avatar: '',
-        skills: ['Angular', 'TypeScript', 'Node.js'],
-        manager: 'Jane Smith'
+    this.isLoading = true;
+    this.error = null;
+    
+    this.employeeApiService.getAllEmployees().subscribe({
+      next: (employees) => {
+        this.employees = employees.map(emp => ({
+          ...emp,
+          joinDate: new Date(emp.joinDate)
+        }));
+        this.filteredEmployees = [...this.employees];
+        this.isLoading = false;
+        
+        // Log dynamic cURL commands for the first employee (if any)
+        
       },
-      {
-        id: '2',
-        firstName: 'Alice',
-        lastName: 'maryemson',
-        email: 'alice.maryemson@rhnova.com',
-        phone: '+1 (555) 234-5678',
-        department: 'HR',
-        position: 'HR Manager',
-        status: 'active',
-        joinDate: new Date('2022-06-20'),
-        salary: 65000,
-        avatar: '',
-        skills: ['Recruitment', 'Employee Relations', 'Training'],
-        manager: 'Bob Wilson'
-      },
-      {
-        id: '3',
-        firstName: 'Mike',
-        lastName: 'Brown',
-        email: 'mike.brown@rhnova.com',
-        phone: '+1 (555) 345-6789',
-        department: 'Marketing',
-        position: 'Marketing Specialist',
-        status: 'on-leave',
-        joinDate: new Date('2023-03-10'),
-        salary: 55000,
-        avatar: '',
-        skills: ['Digital Marketing', 'Content Creation', 'SEO'],
-        manager: 'Sarah Davis'
+      error: (error) => {
+        console.error('Error loading employees:', error);
+        this.error = 'Failed to load employees. Using mock data instead.';
+        this.isLoading = false;
       }
-    ];
-    this.filteredEmployees = [...this.employees];
+    });
   }
 
   setupSearchSubscription() {
@@ -168,43 +127,92 @@ export class EmployeesComponent implements OnInit {
       manager: employee.manager
     });
   }
-
   saveEmployee() {
     if (this.employeeForm.valid) {
       const formValue = this.employeeForm.value;
+      this.isLoading = true;
+      
+      const employeeData: CreateEmployeeDto | UpdateEmployeeDto = {
+        firstName: formValue.firstName,
+        lastName: formValue.lastName,
+        email: formValue.email,
+        phone: formValue.phone,
+        department: formValue.department,
+        position: formValue.position,
+        status: formValue.status || 'active',
+        joinDate: formValue.joinDate,
+        salary: formValue.salary,
+        skills: formValue.skills || [],
+        manager: formValue.manager || ''
+      };
       
       if (this.editingEmployee) {
         // Update existing employee
-        const index = this.employees.findIndex(emp => emp.id === this.editingEmployee!.id);
-        if (index !== -1) {
-          this.employees[index] = {
-            ...this.editingEmployee,
-            ...formValue,
-            joinDate: new Date(formValue.joinDate)
-          };
-        }
+        this.employeeApiService.updateEmployee(this.editingEmployee.id, employeeData).subscribe({
+          next: (updatedEmployee) => {
+            const index = this.employees.findIndex(emp => emp.id === this.editingEmployee!.id);
+            if (index !== -1) {
+              this.employees[index] = {
+                ...updatedEmployee,
+                joinDate: new Date(updatedEmployee.joinDate)
+              };
+            }
+            this.filterEmployees(this.searchForm.value);
+            this.closeModal();
+            this.isLoading = false;
+            
+            // Log updated cURL commands
+            
+          },
+          error: (error) => {
+            console.error('Error updating employee:', error);
+            this.error = 'Failed to update employee';
+            this.isLoading = false;
+          }
+        });
       } else {
         // Add new employee
-        const newEmployee: Employee = {
-          id: Date.now().toString(),
-          ...formValue,
-          joinDate: new Date(formValue.joinDate),
-          status: 'active' as const,
-          avatar: '',
-          skills: []
-        };
-        this.employees.push(newEmployee);
+        this.employeeApiService.createEmployee(employeeData).subscribe({
+          next: (newEmployee) => {
+            const employee = {
+              ...newEmployee,
+              joinDate: new Date(newEmployee.joinDate)
+            };
+            this.employees.push(employee);
+            this.filterEmployees(this.searchForm.value);
+            this.closeModal();
+            this.isLoading = false;
+            
+            // Log cURL commands for new employee
+          },
+          error: (error) => {
+            console.error('Error creating employee:', error);
+            this.error = 'Failed to create employee';
+            this.isLoading = false;
+          }
+        });
       }
-      
-      this.filterEmployees(this.searchForm.value);
-      this.closeModal();
     }
   }
-
   deleteEmployee(employeeId: string) {
     if (confirm('Are you sure you want to delete this employee?')) {
-      this.employees = this.employees.filter(emp => emp.id !== employeeId);
-      this.filterEmployees(this.searchForm.value);
+      this.isLoading = true;
+      
+      this.employeeApiService.deleteEmployee(employeeId).subscribe({
+        next: () => {
+          this.employees = this.employees.filter(emp => emp.id !== employeeId);
+          this.filterEmployees(this.searchForm.value);
+          this.isLoading = false;
+          
+          // Log updated cURL commands
+         
+        },
+        error: (error) => {
+          console.error('Error deleting employee:', error);
+          this.error = 'Failed to delete employee';
+          this.isLoading = false;
+        }
+      });
     }
   }
 
@@ -222,14 +230,150 @@ export class EmployeesComponent implements OnInit {
       default: return '';
     }
   }
-
   exportEmployees() {
-    // Implementation for exporting employee data
-    console.log('Exporting employees...');
+    this.isLoading = true;
+    this.employeeApiService.exportEmployees().subscribe({
+      next: (blob) => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `employees_export_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isLoading = false;
+        
+        // Log export cURL command
+       
+      },
+      error: (error) => {
+        console.error('Error exporting employees:', error);
+        this.error = 'Failed to export employees';
+        this.isLoading = false;
+      }
+    });
   }
 
   importEmployees() {
-    // Implementation for importing employee data
-    console.log('Importing employees...');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        this.isLoading = true;
+        this.employeeApiService.importEmployees(formData).subscribe({
+          next: (importedEmployees) => {
+            this.employees = importedEmployees.map(emp => ({
+              ...emp,
+              joinDate: new Date(emp.joinDate)
+            }));
+            this.filterEmployees(this.searchForm.value);
+            this.isLoading = false;
+            
+            // Log import cURL command
+          },
+          error: (error) => {
+            console.error('Error importing employees:', error);
+            this.error = 'Failed to import employees';
+            this.isLoading = false;
+          }
+        });
+      }
+    };
+    input.click();
+  }
+
+  /**
+   * Generate and log dynamic cURL commands for current employee
+   */
+  
+
+  /**
+   * Test API endpoint with dynamic data
+   */
+  testApiEndpoint(employee: Employee, operation: string) {
+    switch (operation) {
+      case 'get':
+        this.employeeApiService.getEmployeeById(employee.id).subscribe({
+          next: (result) => {
+            console.log(`✅ GET Employee ${employee.id}:`, result);
+          },
+          error: (error) => console.error(`❌ GET Employee failed:`, error)
+        });
+        break;
+        
+      case 'deactivate':
+        this.employeeApiService.deactivateEmployee(employee.id).subscribe({
+          next: (result) => {
+            console.log(`✅ Deactivated Employee ${employee.id}:`, result);
+            // Update local data
+            const index = this.employees.findIndex(emp => emp.id === employee.id);
+            if (index !== -1) {
+              this.employees[index] = { ...result, joinDate: new Date(result.joinDate) };
+              this.filterEmployees(this.searchForm.value);
+            }
+          },
+          error: (error) => console.error(`❌ Deactivate Employee failed:`, error)
+        });
+        break;
+        
+      case 'activate':
+        this.employeeApiService.activateEmployee(employee.id).subscribe({
+          next: (result) => {
+            console.log(`✅ Activated Employee ${employee.id}:`, result);
+            // Update local data
+            const index = this.employees.findIndex(emp => emp.id === employee.id);
+            if (index !== -1) {
+              this.employees[index] = { ...result, joinDate: new Date(result.joinDate) };              this.filterEmployees(this.searchForm.value);
+            }
+          },
+          error: (error) => console.error(`❌ Activate Employee failed:`, error)
+        });
+        break;
+    }
+  }
+
+  /**
+   * Search employees by department using API
+   */
+  searchByDepartment(department: string) {
+    this.isLoading = true;
+    this.employeeApiService.getEmployeesByDepartment(department).subscribe({
+      next: (employees) => {
+        this.filteredEmployees = employees.map(emp => ({
+          ...emp,
+          joinDate: new Date(emp.joinDate)
+        }));
+        this.isLoading = false;
+        
+        // Log search cURL command
+        console.log(`🔍 Search by department cURL:`, 
+          `curl -X GET "${this.employeeApiService['baseUrl']}/api/hr/employees?department=${department}" -H "Authorization: Bearer ${localStorage.getItem('auth_token')}"`);
+      },
+      error: (error) => {
+        console.error('Error searching by department:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Get employee statistics with dynamic cURL logging
+   */
+  getStatistics() {
+    this.employeeApiService.getEmployeeStatistics().subscribe({
+      next: (stats) => {
+        console.log('📊 Employee Statistics:', stats);
+        
+        // Log statistics cURL command
+        console.log(`📈 Statistics cURL:`, 
+          `curl -X GET "${this.employeeApiService['baseUrl']}/api/hr/employees/statistics" -H "Authorization: Bearer ${localStorage.getItem('auth_token')}"`);
+      },
+      error: (error) => console.error('Error getting statistics:', error)
+    });
   }
 }

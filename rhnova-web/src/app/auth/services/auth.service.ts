@@ -80,6 +80,11 @@ export class AuthService {
     return null;
   }
 
+  getUserRole(): string | null {
+    const userData = this.getUserData();
+    return userData ? userData.role : null;
+  }
+
   private checkTokenValidity(): void {
     const token = this.getToken();
     if (token && this.isTokenExpired(token)) {

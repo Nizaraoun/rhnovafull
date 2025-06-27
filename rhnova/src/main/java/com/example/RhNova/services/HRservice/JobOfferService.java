@@ -3,6 +3,7 @@ package com.example.RhNova.services.HRservice;
 import com.example.RhNova.model.entity.ResponRH.JobOffer;
 import com.example.RhNova.repositories.HRrepo.JobOfferRepository;
 import com.example.RhNova.specifications.JobOfferCriteriaBuilder;
+import com.example.RhNova.util.AuthUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,21 @@ public class JobOfferService {
     
     private final JobOfferRepository jobOfferRepository;
     private final MongoTemplate mongoTemplate;
+    private final AuthUtil authUtil;
     
     @Autowired
-    public JobOfferService(JobOfferRepository jobOfferRepository, MongoTemplate mongoTemplate) {
+    public JobOfferService(JobOfferRepository jobOfferRepository, MongoTemplate mongoTemplate, AuthUtil authUtil) {
         this.jobOfferRepository = jobOfferRepository;
         this.mongoTemplate = mongoTemplate;
+        this.authUtil = authUtil;
     }
     
     public JobOffer addJobOffer(JobOffer offer) {
+        // Set the ID of the HR responsible who created this job offer
+        String currentUserId = authUtil.getCurrentUserId();
+        if (currentUserId != null) {
+            offer.setCreatedByHrId(currentUserId);
+        }
         return jobOfferRepository.save(offer);
     }
     
@@ -123,6 +131,23 @@ public class JobOfferService {
     public List<JobOffer> searchOffersByLocation(String localisation) {
         return jobOfferRepository.findByLocalisationContainingIgnoreCaseAndNotArchived(localisation);
     }
-
+    
+    /**
+     * Get job offers created by a specific HR user
+     */
+    public List<JobOffer> getOffersByHrId(String hrId) {
+        return jobOfferRepository.findByCreatedByHrId(hrId);
+    }
+    
+    /**
+     * Get job offers created by the current authenticated HR user
+     */
+    public List<JobOffer> getOffersByCurrentHr() {
+        String currentUserId = authUtil.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+        return jobOfferRepository.findByCreatedByHrId(currentUserId);
+    }
 
 }

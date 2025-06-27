@@ -1,0 +1,105 @@
+<div class="manager-teams">  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Mes Équipes</h1>
+      <p>Gérer et surveiller les membres de votre équipe</p>
+    </div>
+    <a routerLink="/admin/teams" class="btn btn-primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Créer une Nouvelle Équipe
+    </a>
+  </div>
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Chargement des équipes...</p>
+  </div>
+
+  <!-- Teams List -->
+  <div class="teams-container" *ngIf="!isLoading">
+    <div class="team-card" *ngFor="let team of teams">
+      <div class="team-header">
+        <div class="team-info">
+          <h2>{{ team.name }}</h2>
+          <p class="team-description">{{ team.description }}</p>
+          <div class="team-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>              {{ team.members.length }} membres
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Créée le {{ team.createdDate | date:'shortDate' }}
+            </span>
+          </div>
+        </div>
+        
+      </div>      <div class="team-members">
+        <h3>Membres de l'Équipe</h3>
+        <div class="members-grid">
+          <div class="member-card" *ngFor="let member of team.members">
+            <div class="member-avatar">
+              <div class="avatar-placeholder">{{ getInitials(member.name) }}</div>
+              <div class="status-indicator" [ngClass]="getStatusClass(member.status)"></div>
+            </div>
+            <div class="member-info">
+              <h4>{{ member.name }}</h4>
+              <p class="member-role">{{ member.role }}</p>
+              <p class="member-email">{{ member.email }}</p>
+            </div>
+            <div class="member-stats">
+              
+              <div class="member-status">
+                <span class="status-badge" [ngClass]="getStatusClass(member.status)">
+                  {{ member.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>      <div class="team-footer">
+        <div class="team-quick-actions">
+          <button class="quick-action-btn" (click)="onAssignTask(team)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>            Assigner une Tâche
+          </button>
+          <button class="quick-action-btn" (click)="onViewProgress(team)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            Voir le Progrès
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && teams.length === 0">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>    <h3>Aucune équipe trouvée</h3>
+    <p>Créez votre première équipe pour commencer à gérer vos membres</p>
+    <a routerLink="/admin/teams" class="btn btn-primary">Créer une Équipe</a>
+  </div>
+</div>

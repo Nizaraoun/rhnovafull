@@ -13,7 +13,6 @@ export interface DashboardStats {
   pendingTasksCount: number;
   employeeGrowthData: EmployeeGrowthData[];
   recentActivities: RecentActivity[];
-  averageTaskCompletion: number;
 }
 
 export interface EmployeeGrowthData {
@@ -22,13 +21,30 @@ export interface EmployeeGrowthData {
 }
 
 export interface RecentActivity {
-  id: string;
+  id?: string;
   user: string;
   action: string;
   time: string;
   status: string;
+  avatar?: string;
+  timestamp?: string;
+}
+
+export interface DashboardCard {
+  title: string;
+  value: string | number;
+  change: string;
+  changeType: 'increase' | 'decrease' | 'neutral';
+  icon: string;
+  color: string;
+}
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  status: string;
   avatar: string;
-  timestamp: string;
 }
 
 export interface PendingTask {

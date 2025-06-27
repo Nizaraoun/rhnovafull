@@ -1,6 +1,7 @@
 package com.example.RhNova.services.Managerservice;
 
 import com.example.RhNova.dto.Equipedto;
+import com.example.RhNova.dto.DetailedEquipeDto;
 import com.example.RhNova.dto.userdto;
 import com.example.RhNova.model.entity.User;
 import com.example.RhNova.model.entity.Manager.Equipe;
@@ -12,6 +13,7 @@ import com.example.RhNova.repositories.Managerepo.EquipeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,6 +110,165 @@ public class EquipeServiceImpl implements EquipeService {
     public List<userdto> getMembresByEquipeId(String equipeId) {
         List<User> membres = userRepository.findByEquipeId(equipeId);
         return membres.stream().map(userdto ::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public DetailedEquipeDto getMyTeamDetails(String userEmail) {
+        // Find the user by email
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'email: " + userEmail));
+        System.out.println("Utilisateur trouvé: " + user.getEmail());
+        
+        // Check if user has a team (either as manager or member)
+        Equipe equipe = null;
+        
+        // First check if user is a manager of a team
+        if (user.getRole() == Role.MANAGER) {
+            Optional<Equipe> managerTeam = equipeRepository.findByManagerId(user.getId());
+            if (managerTeam.isPresent()) {
+                equipe = managerTeam.get();
+            }
+        }
+        
+        // If not found as manager, check if user belongs to a team as a member
+        if (equipe == null && user.getEquipe() != null) {
+            equipe = user.getEquipe();
+        }
+        
+        // If still no team found, throw exception
+        if (equipe == null) {
+            System.out.println("L'utilisateur n'appartient à aucune équipe: " + user.getEmail());
+            throw new RuntimeException("Vous n'êtes membre d'aucune équipe. Contactez votre manager pour être ajouté à une équipe.");
+        }
+
+        // Get all team members
+        List<User> membres = userRepository.findByEquipeId(equipe.getId());
+        List<userdto> membresDto = membres.stream()
+                .map(userdto::new)
+                .collect(Collectors.toList());
+        
+        // Create manager DTO
+        userdto managerDto = equipe.getManager() != null ? new userdto(equipe.getManager()) : null;
+        
+        // Build detailed team information
+        return DetailedEquipeDto.builder()
+                .id(equipe.getId())
+                .nom(equipe.getNom())
+                .description(equipe.getDescription() != null ? equipe.getDescription() : "Aucune description disponible")
+                .manager(managerDto)
+                .membres(membresDto)
+                .nombreMembres(membres.size())
+                .build();
+    }
+
+    @Override
+    public DetailedEquipeDto getManagerTeamDetails(String managerEmail) {
+        // Find the manager by email
+        User manager = userRepository.findByEmail(managerEmail)
+                .orElseThrow(() -> new RuntimeException("Manager non trouvé avec l'email: " + managerEmail));
+        
+        // Check if user is actually a manager
+        if (manager.getRole() != Role.MANAGER) {
+            throw new RuntimeException("L'utilisateur n'a pas le rôle de manager");
+        }
+        
+        // Find the team managed by this manager
+        Equipe equipe = equipeRepository.findByManagerId(manager.getId())
+                .orElseThrow(() -> new RuntimeException("Aucune équipe trouvée pour ce manager"));
+        
+        // Get all team members
+        List<User> membres = userRepository.findByEquipeId(equipe.getId());
+        List<userdto> membresDto = membres.stream()
+                .map(userdto::new)
+                .collect(Collectors.toList());
+        
+        // Create manager DTO
+        userdto managerDto = new userdto(manager);
+        
+        // Build detailed team information
+        return DetailedEquipeDto.builder()
+                .id(equipe.getId())
+                .nom(equipe.getNom())
+                .description(equipe.getDescription() != null ? equipe.getDescription() : "Aucune description disponible")
+                .manager(managerDto)
+                .membres(membresDto)
+                .nombreMembres(membres.size())
+                .build();
+    }
+
+    @Override
+    public List<DetailedEquipeDto> getManagerTeamsDetails(String managerEmail) {
+        // Find the manager by email
+        User manager = userRepository.findByEmail(managerEmail)
+                .orElseThrow(() -> new RuntimeException("Manager non trouvé avec l'email: " + managerEmail));
+        
+        // Check if user is actually a manager
+        if (manager.getRole() != Role.MANAGER) {
+            throw new RuntimeException("L'utilisateur n'a pas le rôle de manager");
+        }
+        
+        // Find all teams managed by this manager
+        List<Equipe> equipes = equipeRepository.findAllByManagerId(manager.getId());
+        
+        if (equipes.isEmpty()) {
+            throw new RuntimeException("Aucune équipe trouvée pour ce manager");
+        }
+        
+        // Create manager DTO once
+        userdto managerDto = new userdto(manager);
+        
+        // Build detailed team information for each team
+        return equipes.stream().map(equipe -> {
+            // Get all team members for this specific team
+            List<User> membres = userRepository.findByEquipeId(equipe.getId());
+            List<userdto> membresDto = membres.stream()
+                    .map(userdto::new)
+                    .collect(Collectors.toList());
+            
+            return DetailedEquipeDto.builder()
+                    .id(equipe.getId())
+                    .nom(equipe.getNom())
+                    .description(equipe.getDescription() != null ? equipe.getDescription() : "Aucune description disponible")
+                    .manager(managerDto)
+                    .membres(membresDto)
+                    .nombreMembres(membres.size())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public DetailedEquipeDto getTeamDetailsByManagerId(String managerId) {
+        // Find the manager by ID
+        User manager = userRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager non trouvé avec l'ID: " + managerId));
+        
+        // Check if user is actually a manager
+        if (manager.getRole() != Role.MANAGER) {
+            throw new RuntimeException("L'utilisateur n'a pas le rôle de manager");
+        }
+        
+        // Find the team managed by this manager
+        Equipe equipe = equipeRepository.findByManagerId(managerId)
+                .orElseThrow(() -> new RuntimeException("Aucune équipe trouvée pour ce manager"));
+        
+        // Get all team members
+        List<User> membres = userRepository.findByEquipeId(equipe.getId());
+        List<userdto> membresDto = membres.stream()
+                .map(userdto::new)
+                .collect(Collectors.toList());
+        
+        // Create manager DTO
+        userdto managerDto = new userdto(manager);
+        
+        // Build detailed team information
+        return DetailedEquipeDto.builder()
+                .id(equipe.getId())
+                .nom(equipe.getNom())
+                .description(equipe.getDescription() != null ? equipe.getDescription() : "Aucune description disponible")
+                .manager(managerDto)
+                .membres(membresDto)
+                .nombreMembres(membres.size())
+                .build();
     }
 
 }

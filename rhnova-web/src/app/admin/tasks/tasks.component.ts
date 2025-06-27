@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TaskService, Task } from './task.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { Role } from '../../shared/models/role.model';
 
 interface DisplayTask {
   id?: string;
@@ -40,13 +42,23 @@ export class TasksComponent implements OnInit {
     priority: 'medium',
     assignee: '',
     dueDate: new Date()
-  };
-  loading = false;
+  };  loading = false;
   error = '';
 
-  constructor(private taskService: TaskService) {}
-  ngOnInit() {
+  constructor(
+    private taskService: TaskService,
+    private authService: AuthService,
+    private router: Router
+  ) {}  ngOnInit() {
     console.log('TasksComponent initialized');
+    
+    // Check if user is admin
+    const userRole = this.authService.getUserRole();
+    if (userRole !== Role.ADMIN) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+    
     this.loadTasks();
   }
 

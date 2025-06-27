@@ -1,0 +1,91 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="candidate-header-info">        <div class="candidate-avatar">
+
+        </div>
+        <div class="candidate-basic">
+          <h2 class="candidate-name">{{ candidate?.name }}</h2>
+          <p class="candidate-position">{{ candidate?.position }}</p>
+          <div class="candidate-contact">
+            <span class="contact-item">
+              <i class="fas fa-envelope"></i>
+              {{ candidate?.email }}
+            </span>
+            <span class="contact-item" *ngIf="candidate?.phoneNumber">
+              <i class="fas fa-phone"></i>
+              {{ candidate?.phoneNumber }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <span [class]="getStatusBadgeClass(candidate?.status || '')">
+          {{ getStatusText(candidate?.status || '') }}
+        </span>
+        <button class="close-btn" (click)="onClose()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-content">
+        <!-- Application Details -->
+      <div class="application-summary">
+        <div class="summary-item">
+          <label>Date de Candidature</label>
+          <span>{{ candidate?.appliedDate | date:'MMM dd, yyyy' }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Expérience</label>
+          <span>{{ candidate?.experience }} ans</span>
+        </div>
+        <div class="summary-item" *ngIf="candidate?.profileData?.ville || candidate?.profileData?.pays">
+          <label>Localisation</label>
+          <span>
+            {{ candidate?.profileData?.ville }}{{ candidate?.profileData?.ville && candidate?.profileData?.pays ? ', ' : '' }}{{ candidate?.profileData?.pays }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Profile Display Component -->
+      <div class="profile-section">
+        <app-profile-view 
+          [profile]="profileData"
+          [showActions]="false"
+          *ngIf="profileData">
+        </app-profile-view>
+          <!-- Fallback if no profile data -->
+        <div class="no-profile-data" *ngIf="!profileData">
+          <div class="no-profile-icon">
+            <i class="fas fa-user-slash"></i>
+          </div>
+          <h3>Aucune Donnée de Profil Disponible</h3>
+          <p>Ce candidat n'a pas encore complété ses informations de profil.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <!-- <div class="modal-footer">
+      <div class="action-buttons">
+        <button class="btn btn-outline" (click)="onDownloadResume()">
+          <i class="fas fa-download"></i>
+          Download Resume
+        </button>
+        <button class="btn btn-secondary" (click)="onScheduleInterview()">
+          <i class="fas fa-calendar-check"></i>
+          Schedule Interview
+        </button>
+        <button class="btn btn-primary" (click)="onContactCandidate()">
+          <i class="fas fa-envelope"></i>
+          Contact Candidate
+        </button>
+      </div>
+    </div> -->
+  </div>
+</div>

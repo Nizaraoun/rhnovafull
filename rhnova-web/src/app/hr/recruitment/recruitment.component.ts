@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CandidatureService, CandidateDisplay, CandidatureResponse } from '../shared/services/candidature.service';
+import { CandidateProfileModalComponent } from './candidate-profile-modal/candidate-profile-modal.component';
 
 interface JobPosting {
   id: string;
@@ -31,23 +33,31 @@ interface Candidate {
 @Component({
   selector: 'app-recruitment',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, CandidateProfileModalComponent],
   templateUrl: './recruitment.component.html',
   styleUrls: ['./recruitment.component.scss']
 })
 export class RecruitmentComponent implements OnInit {
-  activeTab: 'jobs' | 'candidates' = 'jobs';
+  activeTab: 'jobs' | 'candidates' = 'candidates'; // Changed default to candidates
   jobPostings: JobPosting[] = [];
-  candidates: Candidate[] = [];
+  candidates: CandidateDisplay[] = []; // Changed to use CandidateDisplay type
   filteredJobs: JobPosting[] = [];
-  filteredCandidates: Candidate[] = [];
+  filteredCandidates: CandidateDisplay[] = []; // Changed to use CandidateDisplay type
   
   jobForm: FormGroup;
-  searchForm: FormGroup;
-  showJobModal = false;
+  searchForm: FormGroup;  showJobModal = false;
   editingJob: JobPosting | null = null;
+  loading = false;
+  error: string | null = null;
+  
+  // Profile modal properties
+  showProfileModal = false;
+  selectedCandidate: CandidateDisplay | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private candidatureService: CandidatureService
+  ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
       status: [''],
@@ -63,69 +73,37 @@ export class RecruitmentComponent implements OnInit {
       description: ['', Validators.required]
     });
   }
-
   ngOnInit() {
     this.loadJobPostings();
-    this.loadCandidates();
+    this.loadCandidatesFromAPI();
     this.setupSearchSubscription();
   }
 
   loadJobPostings() {
     this.jobPostings = [
-      {
-        id: '1',
-        title: 'Senior Frontend Developer',
-        department: 'Engineering',
-        location: 'Remote',
-        type: 'full-time',
-        status: 'active',
-        applicants: 24,
-        postedDate: new Date('2024-01-15'),
-        deadline: new Date('2024-03-15'),
-        description: 'We are looking for an experienced frontend developer...'
-      },
-      {
-        id: '2',
-        title: 'HR Specialist',
-        department: 'HR',
-        location: 'New York',
-        type: 'full-time',
-        status: 'active',
-        applicants: 12,
-        postedDate: new Date('2024-02-01'),
-        deadline: new Date('2024-04-01'),
-        description: 'Join our HR team to help manage talent...'
-      }
+     
     ];
     this.filteredJobs = [...this.jobPostings];
   }
-
-  loadCandidates() {
-    this.candidates = [
-      {
-        id: '1',
-        name: 'Sarah Wilson',
-        email: 'sarah@example.com',
-        phone: '+1 (555) 123-4567',
-        position: 'Senior Frontend Developer',
-        status: 'interview',
-        appliedDate: new Date('2024-01-20'),
-        resume: 'sarah_wilson_resume.pdf',
-        experience: 5
+  loadCandidatesFromAPI() {
+    this.loading = true;
+    this.error = null;
+    
+    this.candidatureService.getMyCandidatures().subscribe({
+      next: (candidatures: CandidatureResponse[]) => {
+        this.candidates = this.candidatureService.mapToDisplayFormat(candidatures);
+        this.filteredCandidates = [...this.candidates];
+        this.loading = false;
       },
-      {
-        id: '2',
-        name: 'David Chen',
-        email: 'david@example.com',
-        phone: '+1 (555) 234-5678',
-        position: 'HR Specialist',
-        status: 'screening',
-        appliedDate: new Date('2024-02-05'),
-        resume: 'david_chen_resume.pdf',
-        experience: 3
+      error: (error) => {
+        console.error('Error loading candidatures:', error);
+        this.error = 'Failed to load candidates. Please try again.';
+        this.loading = false;
+        // Fallback to empty array in case of error
+        this.candidates = [];
+        this.filteredCandidates = [];
       }
-    ];
-    this.filteredCandidates = [...this.candidates];
+    });
   }
 
   setupSearchSubscription() {
@@ -223,10 +201,37 @@ export class RecruitmentComponent implements OnInit {
       case 'applied': case 'screening': return 'status-pending';
       default: return '';
     }
+  }  viewCandidateProfile(candidate: CandidateDisplay) {
+    this.selectedCandidate = candidate;
+    this.showProfileModal = true;
   }
 
-  updateCandidateStatus(candidate: Candidate, newStatus: string) {
+  closeProfileModal() {
+    this.showProfileModal = false;
+    this.selectedCandidate = null;
+  }
+
+  updateCandidateStatus(candidate: CandidateDisplay, newStatus: string) {
+    const originalStatus = candidate.status;
     candidate.status = newStatus as any;
-    // In real app, this would make an API call
+    
+    // Map display status to API status
+    const apiStatut = this.candidatureService.mapStatusToStatut(newStatus);
+    
+    this.candidatureService.updateCandidatureStatus(candidate.id, apiStatut).subscribe({
+      next: () => {
+        console.log('Status updated successfully');
+      },
+      error: (error) => {
+        console.error('Error updating status:', error);
+        // Revert the status change on error
+        candidate.status = originalStatus;
+        this.error = 'Failed to update candidate status. Please try again.';
+      }
+    });
+  }
+  scheduleInterview(candidate: CandidateDisplay) {
+    // Logic to schedule an interview for the candidate
+    console.log(`Scheduling interview for candidate ${candidate.name}`);
   }
 }

@@ -1,0 +1,233 @@
+<div class="candidate-profile">  <div class="profile-header">
+    <h1>Complétez Votre Profil</h1>
+    <p>Veuillez remplir vos informations pour postuler aux emplois</p>
+    
+    <!-- Debug buttons for development -->
+   
+  </div>
+
+  <div class="profile-form-container">
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+        <!-- Photo Upload Section -->
+      <div class="form-section">
+        <h2>Photo de Profil</h2>
+        <div class="photo-upload-section">
+          
+          <div class="upload-controls">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+            <button type="button" class="btn btn-outline-primary" (click)="fileInput.click()">
+              {{ currentProfile?.photoUrl ? 'Changer la Photo' : 'Télécharger une Photo' }}
+            </button>
+          </div>
+        </div>
+      </div>      <div class="form-section">
+        <h2>Informations Personnelles</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Prénom *</label>
+            <input 
+              id="firstName"
+              type="text" 
+              formControlName="firstName"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('firstName')"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+              Le prénom est requis
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">Nom *</label>
+            <input 
+              id="lastName"
+              type="text" 
+              formControlName="lastName"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('lastName')"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+              Le nom est requis
+            </div>
+          </div>
+        </div>        <div class="form-row">
+          <div class="form-group">
+            <label for="dateDeNaissance">Date de Naissance</label>
+            <input 
+              id="dateDeNaissance"
+              type="date" 
+              formControlName="dateDeNaissance"
+              class="form-control"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Numéro de Téléphone *</label>
+            <input 
+              id="phone"
+              type="tel" 
+              formControlName="phone"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('phone')"            />
+            <div class="error-message" *ngIf="isFieldInvalid('phone')">
+              Le numéro de téléphone est requis
+            </div>
+          </div>
+        </div>        <div class="form-row">
+          <div class="form-group">
+            <label for="ville">Ville</label>
+            <input 
+              id="ville"
+              type="text" 
+              formControlName="ville"
+              class="form-control"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="pays">Pays</label>
+            <input 
+              id="pays"
+              type="text" 
+              formControlName="pays"
+              class="form-control"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="codePostal">Code Postal</label>
+            <input 
+              id="codePostal"
+              type="text" 
+              formControlName="codePostal"
+              class="form-control"
+            />
+          </div>
+        </div>
+      </div>      <div class="form-section">
+        <h2>Informations Professionnelles</h2>
+        
+        <div class="form-group">
+          <label for="profession">Profession</label>
+          <input 
+            id="profession"
+            type="text" 
+            formControlName="profession"
+            class="form-control"
+            placeholder="ex. Développeur Logiciel, Responsable Marketing"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="experience">Années d'Expérience</label>
+          <select formControlName="experience" class="form-control">
+            <option value="">Sélectionner le niveau d'expérience</option>
+            <option value="0-1">0-1 ans</option>
+            <option value="2-3">2-3 ans</option>
+            <option value="4-5">4-5 ans</option>
+            <option value="6-10">6-10 ans</option>
+            <option value="10+">10+ ans</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="competences">Compétences (séparées par des virgules)</label>
+          <textarea 
+            id="competences"
+            formControlName="competences"
+            class="form-control"
+            rows="3"
+            placeholder="ex. JavaScript, Angular, Python, Gestion de Projet"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Résumé Professionnel</label>
+          <textarea 
+            id="description"
+            formControlName="description"
+            class="form-control"
+            rows="4"
+            placeholder="Brève description de votre parcours professionnel et objectifs"
+          ></textarea>
+        </div>
+      </div>      <div class="form-section">
+        <h2>Formation et Expérience</h2>
+        
+        <div class="form-group">
+          <label for="formations">Formation (une par ligne)</label>
+          <textarea 
+            id="formations"
+            formControlName="formations"
+            class="form-control"
+            rows="3"
+            placeholder="ex. Master en Informatique&#10;Licence en Mathématiques"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="experiences">Expérience Professionnelle (une par ligne)</label>
+          <textarea 
+            id="experiences"
+            formControlName="experiences"
+            class="form-control"
+            rows="3"
+            placeholder="ex. 3 ans chez TechCorp&#10;2 ans chez StartupXYZ"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="certifications">Certifications (une par ligne)</label>
+          <textarea 
+            id="certifications"
+            formControlName="certifications"
+            class="form-control"
+            rows="3"
+            placeholder="ex. AWS Certified Developer&#10;Oracle Java SE 11"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="projets">Projets (une par ligne)</label>
+          <textarea 
+            id="projets"
+            formControlName="projets"
+            class="form-control"
+            rows="3"
+            placeholder="ex. Application e-commerce&#10;Système de gestion RH"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="langues">Langues (une par ligne)</label>
+          <textarea 
+            id="langues"
+            formControlName="langues"
+            class="form-control"
+            rows="3"
+            placeholder="ex. Français (natif)&#10;Anglais (courant)&#10;Espagnol (intermédiaire)"
+          ></textarea>
+        </div>
+      </div>      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="profileForm.invalid || isLoading()"
+        >
+          <span *ngIf="isLoading()" class="spinner"></span>
+          {{ isLoading() ? 'Enregistrement...' : (currentProfile ? 'Mettre à Jour le Profil' : 'Créer le Profil') }}
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn-outline-secondary"
+          (click)="loadProfile()"
+          [disabled]="isLoading()"
+        >
+          Recharger le Profil
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

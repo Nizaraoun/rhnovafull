@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { BaseHttpService } from '../../shared/services/base-http.service';
 import { 
   AuthResponse, 
   LoginRequest, 
@@ -71,34 +71,34 @@ export interface Interview {
 @Injectable({
   providedIn: 'root'
 })
-export class AdminService {
-  private apiUrl = environment.apiUrl;
+export class AdminService extends BaseHttpService {
 
-  constructor(private http: HttpClient) { }
-
+  constructor(http: HttpClient) {
+    super(http);
+  }
   // User management
   getAllUsers(): Observable<UserDto[]> {
-    return this.http.get<UserDto[]>(`${this.apiUrl}/api/admin/users`);
+    return this.get<UserDto[]>('/api/admin/users');
   }
 
   getUserById(id: string): Observable<UserDto> {
-    return this.http.get<UserDto>(`${this.apiUrl}/api/admin/users/${id}`);
+    return this.get<UserDto>(`/api/admin/users/${id}`);
   }
 
   createUser(user: UserDto): Observable<UserDto> {
-    return this.http.post<UserDto>(`${this.apiUrl}/api/admin/users`, user);
+    return this.post<UserDto>('/api/admin/users', user);
   }
   // For creating internal users (not external candidates)
   createInternalUser(user: { name: string, email: string, password: string, role: Role }): Observable<UserDto> {
-    return this.http.post<UserDto>(`${this.apiUrl}/api/auth/create-internal-user`, user);
+    return this.post<UserDto>('/api/auth/create-internal-user', user);
   }
 
   updateUser(id: string, user: UserDto): Observable<UserDto> {
-    return this.http.put<UserDto>(`${this.apiUrl}/api/admin/users/${id}`, user);
+    return this.put<UserDto>(`/api/admin/users/${id}`, user);
   }
 
   deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/admin/users/${id}`);
+    return this.delete<void>(`/api/admin/users/${id}`);
   }
 
   // Candidate management
@@ -147,12 +147,12 @@ export class AdminService {
     return of(undefined);
   }  // Équipe management
   getAllEquipes(): Observable<EquipeDto[]> {
-    return this.http.get<EquipeDto[]>(`${this.apiUrl}/api/equipes`);
+    return this.get<EquipeDto[]>('/api/equipes');
   }
 
   // Team management (using EquipeDto but with Team interface for UI)
   getAllTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.apiUrl}/api/equipes`);
+    return this.get<Team[]>('/api/equipes');
   }  createTeam(team: TeamRequest): Observable<Team> {
     // Ensure the request matches exactly the curl example:
     // { "nom": "...", "description": "...", "managerId": "...", "membreIds": [...] }
@@ -164,7 +164,7 @@ export class AdminService {
     };
     
     console.log('Creating team with payload:', requestPayload);
-    return this.http.post<Team>(`${this.apiUrl}/api/equipes`, requestPayload);
+    return this.post<Team>('/api/equipes', requestPayload);
   }
   updateTeam(id: string, team: TeamRequest): Observable<Team> {
     // Ensure the request matches exactly the curl example:
@@ -177,38 +177,38 @@ export class AdminService {
     };
     
     console.log('Updating team with payload:', requestPayload);
-    return this.http.put<Team>(`${this.apiUrl}/api/equipes/${id}`, requestPayload);
+    return this.put<Team>(`/api/equipes/${id}`, requestPayload);
   }
   deleteTeam(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/equipes/${id}`);
+    return this.delete<void>(`/api/equipes/${id}`);
   }
 
   // Team member management
   addMemberToTeam(teamId: string, memberId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/equipes/${teamId}/membres/${memberId}`, {});
+    return this.post<void>(`/api/equipes/${teamId}/membres/${memberId}`, {});
   }
 
   removeMemberFromTeam(teamId: string, memberId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/equipes/${teamId}/membres/${memberId}`);
+    return this.delete<void>(`/api/equipes/${teamId}/membres/${memberId}`);
   }
 
   getTeamMembers(teamId: string): Observable<UserDto[]> {
-    return this.http.get<UserDto[]>(`${this.apiUrl}/api/equipes/${teamId}/membres`);
+    return this.get<UserDto[]>(`/api/equipes/${teamId}/membres`);
   }  // Candidature management
   getAllCandidatures(): Observable<CandidatureDto[]> {
-    return this.http.get<CandidatureDto[]>(`${this.apiUrl}/api/admin/candidatures`);
+    return this.get<CandidatureDto[]>('/api/admin/candidatures');
   }
 
   createCandidature(candidature: CandidatureDto): Observable<CandidatureDto> {
-    return this.http.post<CandidatureDto>(`${this.apiUrl}/api/admin/candidatures`, candidature);
+    return this.post<CandidatureDto>('/api/admin/candidatures', candidature);
   }
 
   updateCandidature(id: string, candidature: CandidatureDto): Observable<CandidatureDto> {
-    return this.http.put<CandidatureDto>(`${this.apiUrl}/api/admin/candidatures/${id}`, candidature);
+    return this.put<CandidatureDto>(`/api/admin/candidatures/${id}`, candidature);
   }
 
   deleteCandidature(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/admin/candidatures/${id}`);
+    return this.delete<void>(`/api/admin/candidatures/${id}`);
   }
   // Job Offer management
   getAllJobOffers(filters?: JobOfferFilters): Observable<JobOfferDisplay[]> {
@@ -221,9 +221,7 @@ export class AdminService {
       if (filters.page !== undefined) params = params.set('page', filters.page.toString());
       if (filters.size !== undefined) params = params.set('size', filters.size.toString());
       if (filters.sort) params = params.set('sort', filters.sort);
-    }
-
-    return this.http.get<any>(`${this.apiUrl}/api/joboffers/all`, { params })
+    }    return this.get<any>('/api/joboffers/all', params)
       .pipe(
         map(response => {
           console.log('Raw API response:', response);
@@ -258,7 +256,7 @@ export class AdminService {
       );
   }
   getJobOfferById(id: string): Observable<JobOfferDisplay> {
-    return this.http.get<JobOfferBackend>(`${this.apiUrl}/api/joboffers/${id}`)
+    return this.get<JobOfferBackend>(`/api/joboffers/${id}`)
       .pipe(
         map(backendOffer => JobOfferMapper.backendToDisplay(backendOffer)),
         catchError((error: any) => {
@@ -272,7 +270,7 @@ export class AdminService {
     const backendOffer = JobOfferMapper.displayToBackend(jobOffer);
     console.log('Creating job offer with data:', backendOffer);
     
-    return this.http.post<JobOfferBackend>(`${this.apiUrl}/api/joboffers/create`, backendOffer)
+    return this.post<JobOfferBackend>('/api/joboffers/create', backendOffer)
       .pipe(
         map(response => JobOfferMapper.backendToDisplay(response)),
         catchError((error: any) => {
@@ -286,7 +284,7 @@ export class AdminService {
     const backendOffer = JobOfferMapper.displayToBackend(jobOffer);
     console.log('Updating job offer with data:', backendOffer);
     
-    return this.http.put<JobOfferBackend>(`${this.apiUrl}/api/joboffers/update/${id}`, backendOffer)
+    return this.put<JobOfferBackend>(`/api/joboffers/update/${id}`, backendOffer)
       .pipe(
         map(response => JobOfferMapper.backendToDisplay(response)),
         catchError((error: any) => {
@@ -297,7 +295,7 @@ export class AdminService {
   }
 
   deleteJobOffer(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/joboffers/delete/${id}`)
+    return this.delete<void>(`/api/joboffers/delete/${id}`)
       .pipe(
         catchError((error: any) => {
           console.error('Error deleting job offer:', error);
@@ -307,7 +305,7 @@ export class AdminService {
   }
 
   archiveJobOffer(id: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/api/joboffers/archive/${id}`, {})
+    return this.patch<void>(`/api/joboffers/archive/${id}`, {})
       .pipe(
         catchError((error: any) => {
           console.error('Error archiving job offer:', error);

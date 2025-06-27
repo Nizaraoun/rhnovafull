@@ -18,4 +18,5 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     List<User> findByEquipeId(String equipeId);
 
+    List<User> findByRole(com.example.RhNova.model.enums.Role role);
 }

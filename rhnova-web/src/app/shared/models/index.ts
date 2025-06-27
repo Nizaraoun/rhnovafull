@@ -4,3 +4,5 @@ export * from './role.model';
 export * from './candidature.model';
 export * from './jobOffer';
 export * from './jobOfferBackend';
+export * from './profile.model';
+export * from './interview.model';

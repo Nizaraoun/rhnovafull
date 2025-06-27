@@ -23,6 +23,7 @@ public class Profil {
     private String ville;
     private String pays;
     private String codePostal;
+    private String phoneNumber; // Numéro de téléphone
     private String photo; // URL ou base64
 
     private String profession;

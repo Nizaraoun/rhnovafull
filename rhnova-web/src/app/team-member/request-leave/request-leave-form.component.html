@@ -1,0 +1,112 @@
+<div class="request-leave-container">
+  <div class="header">
+    <h2>Demande de Congé</h2>
+    <p>Remplissez le formulaire pour soumettre votre demande de congé</p>
+  </div>
+
+  <form [formGroup]="leaveRequestForm" (ngSubmit)="onSubmit()" class="leave-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="leaveType">Type de congé *</label>        <select id="leaveType" formControlName="leaveType" class="form-control">
+          <option value="">Sélectionner un type</option>
+          <option value="VACANCES">Congé payé</option>
+          <option value="MALADIE">Congé maladie</option>
+          <option value="MATERNITE">Congé maternité</option>
+          <option value="PATERNITE">Congé paternité</option>
+          <option value="SANS_SOLDE">Congé sans solde</option>
+          <option value="AUTRE">Autre</option>
+        </select>
+        <div class="error-message" *ngIf="leaveRequestForm.get('leaveType')?.invalid && leaveRequestForm.get('leaveType')?.touched">
+          Le type de congé est requis
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="priority">Priorité</label>
+        <select id="priority" formControlName="priority" class="form-control">
+          <option value="normal">Normale</option>
+          <option value="urgent">Urgente</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startDate">Date de début *</label>
+        <input type="date" id="startDate" formControlName="startDate" class="form-control">
+        <div class="error-message" *ngIf="leaveRequestForm.get('startDate')?.invalid && leaveRequestForm.get('startDate')?.touched">
+          La date de début est requise
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">Date de fin *</label>
+        <input type="date" id="endDate" formControlName="endDate" class="form-control">
+        <div class="error-message" *ngIf="leaveRequestForm.get('endDate')?.invalid && leaveRequestForm.get('endDate')?.touched">
+          La date de fin est requise
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group full-width">      <label for="reason">Motif *</label>
+      <textarea 
+        id="reason" 
+        formControlName="reason" 
+        class="form-control" 
+        rows="4"
+        placeholder="Expliquez brièvement la raison de votre demande de congé (minimum 5 caractères)...">
+      </textarea>
+      <div class="error-message" *ngIf="leaveRequestForm.get('reason')?.invalid && leaveRequestForm.get('reason')?.touched">
+        <span *ngIf="leaveRequestForm.get('reason')?.errors?.['required']">Le motif est requis</span>
+        <span *ngIf="leaveRequestForm.get('reason')?.errors?.['minlength']">Le motif doit contenir au moins 5 caractères</span>
+      </div>
+    </div>    <!-- Manager Notes: UI only - commentaireValidateur is set by manager/validator in backend -->
+    <div class="form-group full-width">
+      <label for="managerNotes">Notes pour le manager</label>
+      <textarea 
+        id="managerNotes" 
+        formControlName="managerNotes" 
+        class="form-control" 
+        rows="3"
+        placeholder="Informations supplémentaires pour votre manager...">
+      </textarea>
+    </div>
+
+    <div class="days-summary" *ngIf="totalDays > 0">
+      <div class="summary-card">
+        <h4>Résumé de la demande</h4>
+        <p><strong>Durée totale :</strong> {{ totalDays }} jour(s)</p>
+        <p><strong>Type :</strong> {{ getLeaveTypeLabel() }}</p>
+        <p><strong>Période :</strong> {{ formatDateRange() }}</p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Annuler
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="leaveRequestForm.invalid || isSubmitting">
+        <span *ngIf="isSubmitting">Envoi en cours...</span>
+        <span *ngIf="!isSubmitting">Soumettre la demande</span>
+      </button>
+    </div>
+  </form>  <div class="success-message" *ngIf="showSuccessMessage">
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      Votre demande de congé a été soumise avec succès. Vous recevrez une notification une fois qu'elle sera traitée.
+      <div class="success-actions">
+        <a routerLink="/team-member/my-leave-requests" class="btn btn-outline-primary">
+          <i class="fas fa-list"></i>
+          Voir mes demandes
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-message" *ngIf="showErrorMessage">
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

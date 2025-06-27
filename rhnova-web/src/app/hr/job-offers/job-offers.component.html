@@ -1,0 +1,347 @@
+<div class="job-offers-page">
+  <!-- Header Section -->  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Gestion des Offres d'Emploi</h1>
+      <p class="page-subtitle">Gérer et suivre toutes les offres d'emploi</p>
+    </div><div class="header-actions">
+       <button type="button" class="btn btn-primary" (click)="openJobOfferModal()">
+        <i class="fas fa-plus"></i>
+        Créer une Offre d'Emploi
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">    <div class="stat-card">
+      <div class="stat-icon active">
+        <i class="fas fa-briefcase"></i>
+      </div>      <div class="stat-content">
+        <h3>{{ getActiveJobOffersCount() }}</h3>
+        <p>Offres d'Emploi Actives</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getFilledJobOffersCount() }}</h3>
+        <p>Postes Pourvus</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getTotalApplicants() }}</h3>
+        <p>Total Candidats</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon danger">
+        <i class="fas fa-pause-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getInactiveJobOffersCount() }}</h3>
+        <p>Offres Inactives</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <form [formGroup]="searchForm" class="filters-form">      <div class="search-field">
+        <i class="fas fa-search"></i>        <input 
+          type="text" 
+          formControlName="searchTerm"
+          placeholder="Rechercher des offres d'emploi..."
+          class="form-input"
+        />
+      </div>
+        <div class="filter-field">
+        <select formControlName="department" class="form-select">
+          <option value="">Tous les Départements</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-field">
+        <select formControlName="status" class="form-select">
+          <option value="">Tous les Statuts</option>
+          <option value="active">Actif</option>
+          <option value="inactive">Inactif</option>
+          <option value="filled">Pourvu</option>
+        </select>
+      </div>
+      
+      <div class="filter-field">
+        <select formControlName="type" class="form-select">
+          <option value="">Tous les Types</option>
+          <option value="full-time">Temps Plein</option>
+          <option value="part-time">Temps Partiel</option>
+          <option value="contract">Stage</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-banner">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{ error }}</span>
+    <button type="button" class="btn-close" (click)="error = ''">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && jobOffers.length === 0" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des offres d'emploi...</p>
+  </div>
+
+  <!-- Job Offers Grid -->
+  <div class="job-offers-grid" *ngIf="!loading || jobOffers.length > 0">
+    <div *ngFor="let jobOffer of filteredJobOffers" class="job-offer-card">
+      <div class="card-header">
+        <div class="job-info">
+          <h3 class="job-title">{{ jobOffer.title }}</h3>          <div class="job-meta">
+            <span class="meta-item">
+              <i class="fas fa-building"></i>
+              {{ jobOffer.department }}
+            </span>
+            <span class="meta-item">
+              <i class="fas fa-map-marker-alt"></i>
+              {{ jobOffer.location }}
+            </span>
+            <span class="meta-item">
+              <i class="fas fa-clock"></i>
+              {{ jobOffer.type | titlecase }}
+            </span>
+          </div>
+        </div>
+        <div class="job-status">
+          <span class="status-badge" [ngClass]="getStatusClass(jobOffer.status)">
+            {{ jobOffer.status | titlecase }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <p class="job-description">{{ jobOffer.description | slice:0:120 }}...</p>
+          <div class="job-requirements" *ngIf="jobOffer.requirements && jobOffer.requirements.length > 0">
+          <h4>Exigences:</h4>
+          <div class="requirement-tags">
+            <span *ngFor="let req of jobOffer.requirements?.slice(0, 3)" class="requirement-tag">
+              {{ req }}
+            </span>
+            <span *ngIf="jobOffer.requirements && jobOffer.requirements.length > 3" class="more-requirements">
+              +{{ jobOffer.requirements.length - 3 }} de plus
+            </span>
+          </div>
+        </div>
+
+        <div class="job-stats">          <div class="stat">
+            <span class="stat-value">{{ jobOffer.applicants }}</span>
+            <span class="stat-label">Candidats</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ jobOffer.deadline | date:'MMM dd' }}</span>
+            <span class="stat-label">Date Limite</span>
+          </div>
+          <div class="stat" *ngIf="jobOffer.salary">
+            <span class="stat-value">TND {{ jobOffer.salary | number }}</span>
+            <span class="stat-label">Salaire</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">        <div class="card-actions">            <button 
+            type="button" 
+            class="btn-icon btn-icon-primary" 
+            (click)="openJobOfferModal(jobOffer)"
+            title="Modifier l'Offre d'Emploi"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button 
+            type="button" 
+            class="btn-icon btn-icon-info" 
+            (click)="toggleJobOfferStatus(jobOffer)"
+            [title]="jobOffer.status === 'active' ? 'Désactiver' : 'Activer'"
+          >
+            <i [class]="jobOffer.status === 'active' ? 'fas fa-pause' : 'fas fa-play'"></i>
+          </button>
+          <button 
+            type="button" 
+            class="btn-icon btn-icon-warning" 
+            (click)="archiveJobOffer(jobOffer)"
+            title="Archiver l'Offre d'Emploi"
+            *ngIf="jobOffer.status === 'active'"
+          >
+            <i class="fas fa-archive"></i>
+          </button>
+          <button 
+            type="button" 
+            class="btn-icon btn-icon-danger" 
+            (click)="deleteJobOffer(jobOffer.id)"
+            title="Supprimer l'Offre d'Emploi"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->  <div *ngIf="filteredJobOffers.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-briefcase"></i>
+    </div>
+    <h3>Aucune offre d'emploi trouvée</h3>
+    <p>Créez votre première offre d'emploi pour commencer à recruter des candidats.</p>
+    <button type="button" class="btn btn-primary" (click)="openJobOfferModal()">
+      Créer une Offre d'Emploi
+    </button>
+  </div>
+</div>
+
+<!-- Job Offer Modal -->
+<div class="modal-overlay" *ngIf="showJobOfferModal" (click)="closeJobOfferModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">    <div class="modal-header">
+      <h2>{{ editingJobOffer ? 'Modifier l\'Offre d\'Emploi' : 'Créer une Nouvelle Offre d\'Emploi' }}</h2>
+      <button type="button" class="btn-close" (click)="closeJobOfferModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="jobOfferForm" (ngSubmit)="saveJobOffer()">        <div class="form-group">
+          <label for="title">Job Title *</label>
+          <input 
+            type="text" 
+            id="title"
+            formControlName="title"
+            class="form-input"
+            placeholder="e.g. Senior Frontend Developer"
+          />
+          <div class="error-message" *ngIf="jobOfferForm.get('title')?.invalid && jobOfferForm.get('title')?.touched">
+            Job title is required
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department *</label>
+            <select id="department" formControlName="department" class="form-select">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+            </select>
+            <div class="error-message" *ngIf="jobOfferForm.get('department')?.invalid && jobOfferForm.get('department')?.touched">
+              Department is required
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <input 
+              type="text" 
+              id="location"
+              formControlName="location"
+              class="form-input"
+              placeholder="e.g. Remote, New York"
+            />
+            <div class="error-message" *ngIf="jobOfferForm.get('location')?.invalid && jobOfferForm.get('location')?.touched">
+              Location is required
+            </div>
+          </div>
+        </div><div class="form-row">
+          <div class="form-group">
+            <label for="type">Employment Type *</label>
+            <select id="type" formControlName="type" class="form-select">
+              <option value="">Select Type</option>
+              <option value="full-time">Full-time</option>
+              <option value="part-time">Part-time</option>
+              <option value="contract">Contract</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="experience">Experience Required</label>
+            <input 
+              type="text" 
+              id="experience"
+              formControlName="experience"
+              class="form-input"
+              placeholder="e.g. 2-3 years, Entry level"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="salary">Salary (Optional)</label>
+            <input 
+              type="number" 
+              id="salary"
+              formControlName="salary"
+              class="form-input"
+              placeholder="e.g. 75000"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="deadline">Application Deadline *</label>
+            <input 
+              type="date" 
+              id="deadline"
+              formControlName="deadline"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Job Description *</label>
+          <textarea 
+            id="description"
+            formControlName="description"
+            class="form-textarea"
+            rows="4"
+            placeholder="Describe the role, responsibilities, and company culture..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="requirements">Requirements (Optional)</label>
+          <textarea 
+            id="requirements"
+            formControlName="requirements"
+            class="form-textarea"
+            rows="3"
+            placeholder="List requirements separated by commas (e.g. React, TypeScript, Node.js)"
+          ></textarea>
+          <small class="form-help">Separate multiple requirements with commas</small>
+        </div>
+
+        <div class="error-message" *ngIf="error">
+          {{ error }}
+        </div>
+      </form>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="closeJobOfferModal()">
+        Cancel
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        (click)="saveJobOffer()" 
+        [disabled]="jobOfferForm.invalid || loading"
+      >
+        {{ editingJobOffer ? 'Update Job Offer' : 'Create Job Offer' }}
+      </button>
+    </div>
+  </div>
+</div>

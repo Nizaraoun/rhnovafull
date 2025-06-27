@@ -186,21 +186,54 @@
 
     .candidate-info {
       .candidate-details {
-        .candidate-name {
-          font-weight: 600;
-          color: #333;
-          margin: 0 0 0.25rem 0;
-          font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .candidate-avatar-small {
+          .avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+          }
         }
 
-        .contact-info {
-          display: flex;
-          flex-direction: column;
-          gap: 0.125rem;
+        .candidate-text {
+          flex: 1;
 
-          span {
-            color: #6c757d;
-            font-size: 0.75rem;
+          .candidate-name {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            i {
+              color: #6b7280;
+            }
+          }
+
+          .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 0.875rem;
+            color: #6b7280;
+
+            span {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+
+              i {
+                width: 12px;
+                text-align: center;
+              }
+            }
           }
         }
       }
@@ -266,41 +299,6 @@
   }
 }
 
-.filters-section {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-
-  .filters-form {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 1rem;
-    align-items: end;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-
-    .search-field {
-      position: relative;
-
-      i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-        z-index: 2;
-      }
-
-      .form-input {
-        padding-left: 2.5rem;
-      }
-    }
-  }
-}
 
 .empty-state {
   text-align: center;
@@ -403,3 +401,460 @@
     grid-template-columns: 1fr;
   }
 }
+
+// Icon Animations and Smooth Effects
+@keyframes iconPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes iconBounce {
+  0%, 20%, 60%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  80% { transform: translateY(-4px); }
+}
+
+@keyframes iconRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes iconGlow {
+  0% { box-shadow: 0 0 5px rgba(76, 201, 240, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(76, 201, 240, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(76, 201, 240, 0.3); }
+}
+
+// Base Icon Styling
+i[class*="fas"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Search Icon with Smooth Effects
+.search-field {
+  i.fas {
+    color: #6c757d;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+
+    &:hover {
+      color: #4cc9f0;
+      transform: scale(1.1);
+    }
+  }
+
+  .form-input:focus + i.fas,
+  .form-input:focus ~ i.fas {
+    color: #4cc9f0;
+    animation: iconPulse 2s ease-in-out infinite;
+  }
+}
+
+// Table Header Icons
+.candidates-table {
+  th {
+    i.fas {
+      color: #113263;
+      margin-right: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      display: inline-block;
+      
+      &:hover {
+        color: #4cc9f0;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// Candidate Info Icons
+.candidate-info {
+  .candidate-name {
+    i.fas {
+      color: #113263;
+      margin-right: 0.5rem;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: #4cc9f0;
+        animation: iconBounce 1s ease;
+      }
+    }
+  }
+
+  .contact-info {
+    span {
+      i.fas {
+        color: #6c757d;
+        margin-right: 0.375rem;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+        width: 14px;
+        text-align: center;
+
+        &.fa-envelope:hover {
+          color: #28a745;
+          transform: scale(1.2);
+        }
+
+        &.fa-phone:hover {
+          color: #007bff;
+          transform: rotate(15deg) scale(1.2);
+        }
+      }
+    }
+  }
+}
+
+// Position and Experience Icons
+.position, .experience, .applied-date {
+  i.fas {
+    color: #6c757d;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #4cc9f0;
+      transform: translateX(3px);
+    }
+  }
+}
+
+// Action Button Icons with Enhanced Effects
+.action-buttons {
+  .btn-icon {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.6s ease;
+    }
+
+    &:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    i.fas {
+      font-size: 0.875rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+      position: relative;
+    }
+
+    &:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+      i.fas {
+        transform: scale(1.1);
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(0.95);
+    }
+
+    // Specific button type effects
+    &.btn-icon-primary {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border-color: #007bff;
+
+      &:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+        
+        i.fas {
+          animation: iconPulse 1.5s ease-in-out;
+        }
+      }
+    }
+
+    &.btn-icon-info {
+      background: linear-gradient(135deg, #17a2b8, #138496);
+      border-color: #17a2b8;
+
+      &:hover {
+        background: linear-gradient(135deg, #138496, #117a8b);
+        box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+        
+        i.fas {
+          animation: iconBounce 1s ease;
+        }
+      }
+    }
+
+    &.btn-icon-success {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+      border-color: #28a745;
+
+      &:hover {
+        background: linear-gradient(135deg, #1e7e34, #155724);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        
+        i.fas {
+          animation: iconRotate 1s ease;
+        }
+      }
+    }
+
+    &.btn-icon-warning {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      border-color: #ffc107;
+
+      &:hover {
+        background: linear-gradient(135deg, #e0a800, #d39e00);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+        
+        i.fas {
+          animation: iconGlow 2s ease-in-out infinite;
+        }
+      }
+    }
+  }
+}
+
+// Empty State Icon
+.empty-state {
+  .empty-icon {
+    i.fas {
+      color: #6c757d;
+      transition: all 0.5s ease;
+      
+      &:hover {
+        color: #4cc9f0;
+        animation: iconPulse 2s ease-in-out infinite;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+// Smooth Icon Loading Animation
+@keyframes iconFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Apply fade-in animation to all icons on page load
+.recruitment-page {
+  i[class*="fas"] {
+    animation: iconFadeIn 0.6s ease-out forwards;
+  }
+}
+
+// Stagger animation delays for table icons
+.candidates-table {
+  tbody tr {
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        i[class*="fas"] {
+          animation-delay: #{$i * 0.1}s;
+        }
+      }
+    }
+  }
+}
+
+// Interactive hover effects for entire rows
+.candidate-row {
+  &:hover {
+    i[class*="fas"] {
+      color: #4cc9f0;
+      transform: translateX(2px);
+    }
+  }
+}
+
+// Status select with icon integration
+.status-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  transition: all 0.3s ease;
+
+  &:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234cc9f0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+  }
+}
+
+// Filter section icon enhancements
+.filters-section {
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    transition: all 0.3s ease;
+
+    &:focus {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23113263' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      box-shadow: 0 0 0 3px rgba(17, 50, 99, 0.1);
+    }
+  }
+}
+
+.filters-section {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  .filters-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+  }
+}  
+    .search-field {
+      position: relative;
+
+      i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 2;
+      }
+
+      .form-input {
+        padding-left: 2.5rem;
+      }
+    }
+
+// Loading and Error States
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .loading-spinner {
+    font-size: 3rem;
+    color: #3f37c9;
+    margin-bottom: 1rem;
+
+    i {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .error-icon {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: #6c757d;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #3f37c9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #113263;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #113263;
+      box-shadow: 0 0 0 3px rgba(17, 50, 99, 0.1);
+    }
+
+    &::placeholder {
+      color: #6c757d;
+    }
+  }

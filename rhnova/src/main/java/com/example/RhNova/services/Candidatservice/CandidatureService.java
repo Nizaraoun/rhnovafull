@@ -1,6 +1,7 @@
 package com.example.RhNova.services.Candidatservice;
 
 import com.example.RhNova.dto.Candidaturedto;
+import com.example.RhNova.dto.DetailedCandidatureDto;
 import java.util.List;
 
 public interface CandidatureService {
@@ -9,5 +10,10 @@ public interface CandidatureService {
     Candidaturedto getCandidatureById(String id);
     void deleteCandidature(String id);
     List<Candidaturedto> getCandidaturesByCandidatId(String candidatId);
-
+    List<Candidaturedto> getCandidaturesByOffreId(String offreId);
+    List<Candidaturedto> getCandidaturesByRHId(String rhId);
+    
+    // Enhanced methods with detailed information
+    List<DetailedCandidatureDto> getDetailedCandidaturesByRHId(String rhId);
+    List<DetailedCandidatureDto> getDetailedCandidaturesByOffreId(String offreId);
 }

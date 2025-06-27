@@ -1,0 +1,204 @@
+<div class="progress-tracking-container">
+  <div class="header">
+    <h2>Suivi des Progrès</h2>
+    <div class="header-controls">
+      <select [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange($event)" class="form-control">
+        <option *ngFor="let option of periodOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+      <select [(ngModel)]="selectedTeam" (ngModelChange)="onTeamChange($event)" class="form-control">
+        <option value="all">Toutes les équipes</option>
+        <option value="Développement">Développement</option>
+        <option value="Marketing">Marketing</option>
+      </select>
+    </div>
+  </div>
+  <!-- Overall Statistics -->
+  <div class="stats-overview" *ngIf="!isLoading">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getOverallStats().total }}</div>
+        <div class="stat-label">Total des tâches</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon completed">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getOverallStats().completed }}</div>
+        <div class="stat-label">Terminées</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon in-progress">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getOverallStats().inProgress }}</div>
+        <div class="stat-label">En cours</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon overdue">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getOverallStats().overdue }}</div>
+        <div class="stat-label">En retard</div>
+      </div>
+    </div>
+
+    <div class="stat-card completion-rate">
+      <div class="stat-icon">
+        <i class="fas fa-percentage"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ getOverallStats().completionRate }}%</div>
+        <div class="stat-label">Taux de réussite</div>
+      </div>
+    </div>
+  </div>
+  <!-- Team Performance -->
+  <div class="team-performance-section" *ngIf="!isLoading">
+    <h3>Performance des équipes</h3>
+    <div class="performance-grid">
+      <div *ngFor="let team of teamPerformance" class="performance-card">
+        <div class="team-header">
+          <h4>{{ team.teamName }}</h4>
+          <div class="completion-badge">{{ getCompletionRate(team) }}%</div>
+        </div>
+        
+        <div class="performance-metrics">
+          <div class="metric">
+            <span class="metric-label">Tâches totales</span>
+            <span class="metric-value">{{ team.totalTasks }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Terminées</span>
+            <span class="metric-value completed">{{ team.completedTasks }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">En cours</span>
+            <span class="metric-value in-progress">{{ team.inProgressTasks }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">En retard</span>
+            <span class="metric-value overdue">{{ team.overdueTasks }}</span>
+          </div>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getCompletionRate(team)"></div>
+        </div>
+
+        <div class="additional-metrics">
+          <div class="metric-item">
+            <i class="fas fa-clock"></i>
+            <span>{{ team.averageCompletionTime }} jours en moyenne</span>
+          </div>
+          <div class="metric-item">
+            <i class="fas fa-chart-line"></i>
+            <span>{{ team.efficiency }}% d'efficacité</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Tasks Progress Table -->
+  <div class="tasks-section" *ngIf="!isLoading">
+    <div class="section-header">
+      <h3>Détail des tâches</h3>
+      <button class="btn btn-primary" routerLink="/manager/tasks">
+        <i class="fas fa-plus"></i>
+        Nouvelle tâche
+      </button>
+    </div>
+
+    <div class="tasks-table">
+      <div class="table-header">
+        <div class="col-title">Tâche</div>
+        <div class="col-assignee">Assigné à</div>
+        <div class="col-team">Équipe</div>
+        <div class="col-status">Statut</div>
+        <div class="col-priority">Priorité</div>
+        <div class="col-progress">Progrès</div>
+        <div class="col-due">Échéance</div>
+        <div class="col-hours">Heures</div>
+      </div>
+
+      <div class="table-body">
+        <div *ngFor="let task of getFilteredTasks()" class="table-row" [class.overdue]="isOverdue(task.dueDate) && task.status !== 'Completed'">
+          <div class="col-title">
+            <div class="task-title">{{ task.title }}</div>
+          </div>
+          
+          <div class="col-assignee">
+            <div class="assignee-info">
+              <span>{{ task.assignee }}</span>
+            </div>
+          </div>
+          
+          <div class="col-team">
+            <span class="team-badge">{{ task.team }}</span>
+          </div>
+          
+          <div class="col-status">
+            <span class="status-badge" [ngClass]="getStatusClass(task.status)">
+              {{ task.status }}
+            </span>
+          </div>
+          
+          <div class="col-priority">
+            <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+              {{ task.priority }}
+            </span>
+          </div>
+          
+          <div class="col-progress">
+            <div class="progress-container">
+              <div class="progress-bar-small">
+                <div 
+                  class="progress-fill-small" 
+                  [style.width.%]="task.progress"
+                  [style.background-color]="getProgressColor(task.progress)">
+                </div>
+              </div>
+              <span class="progress-text">{{ task.progress }}%</span>
+            </div>
+          </div>
+          
+          <div class="col-due">
+            <span [class.overdue-text]="isOverdue(task.dueDate) && task.status !== 'Completed'">
+              {{ task.dueDate | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          
+          <div class="col-hours">
+            <div class="hours-info">
+              <div class="actual">{{ task.actualHours }}h</div>
+              <div class="estimated">/ {{ task.estimatedHours }}h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <h3>Chargement des données de progression...</h3>
+    <p>Veuillez patienter pendant que nous récupérons les informations de votre équipe.</p>
+  </div>
+</div>

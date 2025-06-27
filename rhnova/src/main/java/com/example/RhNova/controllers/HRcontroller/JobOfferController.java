@@ -5,6 +5,9 @@ package com.example.RhNova.controllers.HRcontroller;
 import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
+import java.util.List;
+import java.util.List;
 
 import com.example.RhNova.model.entity.ResponRH.JobOffer;
 import com.example.RhNova.services.HRservice.JobOfferService;
@@ -30,9 +33,8 @@ public class JobOfferController {
     }
     
     @PostMapping("/create")
-    public JobOffer createOffer(@RequestBody JobOffer offer) {
-        System.out.println("testttstst");
-
+    public JobOffer createOffer(@RequestBody JobOffer offer, Principal principal) {
+        System.out.println("Creating job offer for user: " + (principal != null ? principal.getName() : "anonymous"));
         return jobOfferService.addJobOffer(offer); 
     }
     
@@ -59,6 +61,16 @@ public class JobOfferController {
     @DeleteMapping("/delete/{id}")
     public void deleteOffer(@PathVariable String id) {
         jobOfferService.deleteOffer(id);
+    }
+
+    @GetMapping("/my-offers")
+    public List<JobOffer> getMyOffers(Principal principal) {
+        return jobOfferService.getOffersByCurrentHr();
+    }
+
+    @GetMapping("/by-hr/{hrId}")
+    public List<JobOffer> getOffersByHr(@PathVariable String hrId) {
+        return jobOfferService.getOffersByHrId(hrId);
     }
 
     @PatchMapping("/archive/{id}")

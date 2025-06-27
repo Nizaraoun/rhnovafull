@@ -1,0 +1,146 @@
+<div class="jobs-list">  <div class="jobs-header">
+    <h1>Emplois Disponibles</h1>
+    <p>Trouvez votre prochaine opportunité</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters">      <div class="filter-group">
+        <label for="search">Rechercher des Emplois</label>        <input 
+          id="search"
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="onSearchInput($event)"
+          placeholder="Rechercher par titre, entreprise ou lieu"
+          class="form-control"
+        />
+      </div>
+        <div class="filter-group">
+        <label for="jobType">Type d'Emploi</label>
+        <select 
+          id="jobType"
+          [(ngModel)]="selectedType" 
+          (change)="filterJobs()"
+          class="form-control"
+        >
+          <option value="">Tous les Types</option>
+          <option value="full-time">Temps Plein</option>
+          <option value="part-time">Temps Partiel</option>
+          <option value="contract">Contrat</option>
+          <option value="internship">Stage</option>
+        </select>
+      </div>
+        <div class="filter-group">
+        <label for="location">Lieu</label>
+        <input 
+          id="location"
+          type="text" 
+          [(ngModel)]="locationFilter" 
+          (input)="filterJobs()"
+          placeholder="Filtrer par lieu"
+          class="form-control"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs List -->
+  <div class="jobs-container">    <div class="jobs-count">
+      <p>{{ filteredJobs().length }} emploi{{ filteredJobs().length !== 1 ? 's' : '' }} trouvé{{ filteredJobs().length !== 1 ? 's' : '' }}</p>
+    </div>
+
+    <div class="jobs-grid">
+      <div 
+        *ngFor="let job of filteredJobs()" 
+        class="job-card"
+        [class.applied]="job.applied"
+      >        <div class="job-header">
+          <div class="job-title-section">
+            <h3 class="job-title">{{ job.title }}</h3>
+            <p class="job-company">{{ job.department }}</p>
+          </div>
+          <div class="job-type-badge" [class]="'type-' + job.type">
+            {{ job.type | titlecase }}
+          </div>
+        </div>
+
+        <div class="job-details">
+          <div class="job-info">
+            <div class="info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>{{ job.location }}</span>
+            </div>
+            
+            <div class="info-item" *ngIf="job.salary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>{{ job.salary }}</span>
+            </div>
+            
+            <div class="info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>Publié {{ getTimeAgo(job.postedDate) }}</span>
+            </div>
+          </div>
+
+          <div class="job-description">
+            <p>{{ job.description | slice:0:150 }}{{ job.description.length > 150 ? '...' : '' }}</p>
+          </div>          <div class="job-requirements" *ngIf="job.requirements && job.requirements.length > 0">
+            <h4>Exigences Clés :</h4>
+            <div class="requirements-tags">
+              <span 
+                *ngFor="let req of job.requirements!.slice(0, 3)" 
+                class="requirement-tag"
+              >
+                {{ req }}
+              </span>
+              <span *ngIf="job.requirements!.length > 3" class="more-requirements">
+                +{{ job.requirements!.length - 3 }} de plus
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-actions">          <div class="job-deadline">
+            <small>Date limite : {{ job.deadline | date:'MMM dd, yyyy' }}</small>
+          </div>
+          
+          <div class="action-buttons">            <button 
+              class="btn btn-secondary" 
+              (click)="viewJobDetails(job)"
+            >
+              Voir les Détails
+            </button>
+            <button 
+              class="btn btn-primary" 
+              (click)="applyForJob(job)"
+              [disabled]="job.applied"
+            >
+              {{ job.applied ? 'Postulé' : 'Postuler Maintenant' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredJobs().length === 0" class="no-jobs">
+      <div class="no-jobs-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </div>      <h3>Aucun emploi trouvé</h3>
+      <p>Essayez d'ajuster vos filtres de recherche ou revenez plus tard pour de nouvelles opportunités.</p>
+    </div>
+  </div>
+</div>
