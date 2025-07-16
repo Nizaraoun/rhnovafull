@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ManagerService, ManagerTask, DetailedTeam, TeamTaskStatistics, TeamMember as ApiTeamMember, MemberTaskCounts } from '../services/manager.service';
+import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ManagerService, ManagerTask, DetailedTeam, TeamTaskStatistics, TeamMember as ApiTeamMember, MemberTaskCounts, Project, CreateProjectRequest, CreateTaskRequest } from '../services/manager.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 interface TeamMember {
@@ -32,7 +33,7 @@ interface Team {
 @Component({
   selector: 'app-manager-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './manager-dashboard.component.html',
   styleUrls: ['./manager-dashboard.component.scss']
 })
@@ -42,22 +43,58 @@ export class ManagerDashboardComponent implements OnInit {
     completedTasks: 0,
     pendingTasks: 0,
     teamMembers: 0,
-    pendingLeaveRequests: 0
+    pendingLeaveRequests: 0,
+    totalProjects: 0,
+    activeProjects: 0
   };
 
   recentTasks: ManagerTask[] = [];
+  projects: Project[] = [];
   teamDetails: DetailedTeam | null = null;
   currentTeam: Team | null = null;
   isLoading = true;
   error: string | null = null;
 
-  constructor(private managerService: ManagerService) { }
+  // Modal states
+  showCreateProjectModal = false;
+  showCreateTaskModal = false;
+  selectedProject: Project | null = null;
+
+  // Forms
+  projectForm: FormGroup;
+  taskForm: FormGroup;
+
+  constructor(
+    private managerService: ManagerService,
+    private fb: FormBuilder
+  ) {
+    this.projectForm = this.fb.group({
+      nom: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', Validators.required],
+      dateDebut: ['', Validators.required],
+      dateFin: ['', Validators.required],
+      budget: [0, [Validators.required, Validators.min(0)]],
+      statut: ['A_FAIRE', Validators.required]
+    });
+
+    this.taskForm = this.fb.group({
+      titre: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', Validators.required],
+      dateDebut: ['', Validators.required],
+      dateFin: ['', Validators.required],
+      priorite: ['MOYENNE', Validators.required],
+      statut: ['A_FAIRE', Validators.required],
+      assigneeId: ['']
+    });
+  }
   ngOnInit(): void {
     this.loadDashboardData();
   }
   loadDashboardData(): void {
     this.isLoading = true;
-    this.error = null;    // Load multiple data sources in parallel
+    this.error = null;
+
+    // Load multiple data sources in parallel
     forkJoin({
       teamDetails: this.managerService.getMyTeam().pipe(
         catchError(error => {
@@ -71,20 +108,31 @@ export class ManagerDashboardComponent implements OnInit {
           return of([]);
         })
       ),
+      projects: this.managerService.getMyProjects().pipe(
+        catchError(error => {
+          console.error('Error loading projects:', error);
+          return of([]);
+        })
+      ),
       taskStatistics: this.managerService.getTeamTaskStatistics().pipe(
         catchError(error => {
           console.error('Error loading task statistics:', error);
           return of(null);
         })
-      )    }).subscribe({      next: (data) => {
+      )
+    }).subscribe({
+      next: (data) => {
         this.teamDetails = data.teamDetails;
         this.recentTasks = data.teamTasks.slice(0, 5); // Show only recent 5 tasks
+        this.projects = data.projects;
         
         // Calculate statistics from actual tasks if API statistics are not available
         let calculatedStats = this.calculateTaskStatistics(data.teamTasks);
         
         // Use API statistics if available, otherwise use calculated ones
-        const statsToUse = data.taskStatistics || calculatedStats;        // Process team overview data
+        const statsToUse = data.taskStatistics || calculatedStats;
+
+        // Process team overview data
         if (data.teamDetails) {
           const initialTeam = this.mapApiTeamToTeam(data.teamDetails, statsToUse, data.teamTasks);
           
@@ -104,15 +152,19 @@ export class ManagerDashboardComponent implements OnInit {
           completedTasks: statsToUse.completedTasks,
           pendingTasks: statsToUse.pendingTasks,
           teamMembers: data.teamDetails?.membres?.length || 0,
-          pendingLeaveRequests: this.generateMockLeaveRequests() // Generate some sample data
+          pendingLeaveRequests: this.generateMockLeaveRequests(),
+          totalProjects: data.projects.length,
+          activeProjects: data.projects.filter(p => p.statut === 'EN_COURS').length
         };
+
         // If no team details loaded, show a fallback message but don't treat as error
         if (!this.teamDetails) {
           console.warn('No team details available - manager may not be assigned to a team');
         }
         
         this.isLoading = false;
-      },      error: (error) => {
+      },
+      error: (error) => {
         console.error('Error loading dashboard data:', error);
         
         // For 403 errors (permission denied), load fallback data instead of showing error
@@ -160,12 +212,15 @@ export class ManagerDashboardComponent implements OnInit {
       completedTasks: 7,
       pendingTasks: 3,
       teamMembers: 5,
-      pendingLeaveRequests: 2
+      pendingLeaveRequests: 2,
+      totalProjects: 3,
+      activeProjects: 2
     };
 
-    // Sample team details with members
-    
-  
+    // Sample projects data
+    this.projects = [
+      
+    ];
 
     this.isLoading = false;
     this.error = null;
@@ -442,5 +497,158 @@ export class ManagerDashboardComponent implements OnInit {
       console.error('Error loading member task counts:', error);
       return team; // Return team with calculated values if member stats fail
     }
+  }
+
+  // Project Management Methods
+  openCreateProjectModal(): void {
+    this.projectForm.reset();
+    this.projectForm.patchValue({
+      statut: 'A_FAIRE',
+      budget: 0
+    });
+    this.showCreateProjectModal = true;
+  }
+
+  closeCreateProjectModal(): void {
+    this.showCreateProjectModal = false;
+    this.projectForm.reset();
+  }
+
+  createProject(): void {
+    if (this.projectForm.valid) {
+      const formData = this.projectForm.value;
+      const createRequest: CreateProjectRequest = {
+        nom: formData.nom,
+        description: formData.description,
+        dateDebut: formData.dateDebut,
+        dateFin: formData.dateFin,
+        budget: formData.budget,
+        statut: formData.statut
+      };
+
+      this.managerService.createProject(createRequest).subscribe({
+        next: (createdProject) => {
+          this.projects.push(createdProject);
+          this.dashboardStats.totalProjects++;
+          if (createdProject.statut === 'EN_COURS') {
+            this.dashboardStats.activeProjects++;
+          }
+          this.closeCreateProjectModal();
+        },
+        error: (error) => {
+          console.error('Error creating project:', error);
+          // Handle error - show toast or alert
+        }
+      });
+    }
+  }
+
+  openCreateTaskModal(project: Project): void {
+    this.selectedProject = project;
+    this.taskForm.reset();
+    this.taskForm.patchValue({
+      priorite: 'MOYENNE',
+      statut: 'A_FAIRE',
+      dateDebut: new Date().toISOString().split('T')[0]
+    });
+    this.showCreateTaskModal = true;
+  }
+
+  closeCreateTaskModal(): void {
+    this.showCreateTaskModal = false;
+    this.selectedProject = null;
+    this.taskForm.reset();
+  }
+
+  createTaskInProject(): void {
+    if (this.taskForm.valid && this.selectedProject) {
+      const formData = this.taskForm.value;
+      const createTaskRequest: CreateTaskRequest = {
+        titre: formData.titre,
+        description: formData.description,
+        dateDebut: formData.dateDebut,
+        dateFin: formData.dateFin,
+        priorite: formData.priorite,
+        statut: formData.statut,
+        assigneeId: formData.assigneeId || undefined
+      };
+
+      this.managerService.createTaskInProject(this.selectedProject.id, createTaskRequest).subscribe({
+        next: (createdTask) => {
+          // Add the new task to recent tasks
+          this.recentTasks.unshift(createdTask);
+          if (this.recentTasks.length > 5) {
+            this.recentTasks.pop();
+          }
+          
+          // Update dashboard stats
+          this.dashboardStats.totalTasks++;
+          if (createdTask.statut === 'A_FAIRE') {
+            this.dashboardStats.pendingTasks++;
+          }
+          
+          this.closeCreateTaskModal();
+        },
+        error: (error) => {
+          console.error('Error creating task:', error);
+          // Handle error - show toast or alert
+        }
+      });
+    }
+  }
+
+  // TODO: Update to use new project-based task management
+  // Tasks are now associated with projects, so we need to:
+  // 1. Load all projects and their tasks
+  // 2. Aggregate task statistics across all projects
+  // 3. Update createTaskInProject method to work with the new system
+  
+  // Helper methods for project management
+  getProjectStatusClass(status: string): string {
+    switch (status) {
+      case 'A_FAIRE': return 'status-pending';
+      case 'EN_COURS': return 'status-in-progress';
+      case 'TERMINEE': return 'status-completed';
+      case 'ANNULE': return 'status-cancelled';
+      default: return '';
+    }
+  }
+
+  getProjectStatusText(status: string): string {
+    switch (status) {
+      case 'A_FAIRE': return 'Pending';
+      case 'EN_COURS': return 'In Progress';
+      case 'TERMINEE': return 'Completed';
+      case 'ANNULE': return 'Cancelled';
+      default: return status;
+    }
+  }
+
+  viewProjectDetails(project: Project): void {
+    console.log('Viewing project details:', project);
+    // Navigate to project details page
+  }
+
+  assignProjectToTeam(project: Project): void {
+    if (this.teamDetails) {
+      this.managerService.assignProjectToTeam(project.id, this.teamDetails.id).subscribe({
+        next: () => {
+          project.equipeId = this.teamDetails!.id;
+          project.equipeName = this.teamDetails!.nom;
+          console.log('Project assigned to team successfully');
+        },
+        error: (error) => {
+          console.error('Error assigning project to team:', error);
+        }
+      });
+    }
+  }
+
+  getAvailableTeamMembers(): TeamMember[] {
+    return this.currentTeam?.members || [];
+  }
+
+  refreshDashboard(): void {
+    this.loadDashboardData();
   }
 }

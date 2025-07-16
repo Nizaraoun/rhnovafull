@@ -23,6 +23,15 @@ export interface RegisterRequest {
   role?: Role;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface UserDto {
   id: string;
   name: string;

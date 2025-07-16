@@ -3,7 +3,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: nizaraoun1919@gmail.com
-    password: ieme xjdt raue lenj
+    password: pdpd nhpr hoci mflp
     properties:
       mail:
         smtp:

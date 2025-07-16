@@ -74,19 +74,12 @@
       <div class="task-meta">        <div class="meta-item">
           <strong>Assignée par :</strong> {{ task.assignedBy }}
         </div>
+    
         <div class="meta-item">
-          <strong>Date d'échéance :</strong> {{ task.dueDate | date:'medium' }}
-          <span class="due-status" [ngClass]="{ 'overdue': isOverdue(task.dueDate), 'due-soon': getDaysUntilDue(task.dueDate) <= 3 && getDaysUntilDue(task.dueDate) > 0 }">
-            <ng-container *ngIf="isOverdue(task.dueDate)">
-              <!-- (En retard de {{ Math.abs(getDaysUntilDue(task.dueDate)) }} jours) -->
-            </ng-container>
-            <ng-container *ngIf="!isOverdue(task.dueDate) && getDaysUntilDue(task.dueDate) <= 3 && getDaysUntilDue(task.dueDate) > 0">
-              (Échéance dans {{ getDaysUntilDue(task.dueDate) }} jours)
-            </ng-container>
-          </span>
+          <strong>Échéance :</strong> {{ task.dueDate | date:'dd/MM/yyyy' }}
         </div>
-        <div class="meta-item">
-          <strong>Progrès :</strong> {{ task.progress }}%
+        <div class="meta-item priority" [class]="getPriorityClass(task.priority)">
+          <strong>Priorité :</strong> {{ task.priority }}
         </div>
       </div>
       

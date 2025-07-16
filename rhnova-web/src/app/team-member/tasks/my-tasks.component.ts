@@ -1,3 +1,12 @@
+/*
+ * READY FOR NEW TASK-PROJECT RELATIONSHIP
+ * 
+ * This component is already prepared for the new architecture where tasks are associated with projects:
+ * - Task interface includes projectId and projectName fields
+ * - Component can display project information alongside task details
+ * - Team member can see which project each task belongs to
+ */
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +23,8 @@ interface Task {
   assignedBy: string;
   progress: number;
   comments: string[];
+  projectId: string; // Now required since tasks are always part of a project
+  projectName?: string;
 }
 
 @Component({
@@ -68,7 +79,9 @@ export class MyTasksComponent implements OnInit {
       dueDate: new Date(apiTask.dateFin),
       assignedBy: apiTask.createdByName,
       progress: apiTask.progression,
-      comments: [] // Comments will be managed separately or fetched from another endpoint
+      comments: [], // Comments will be managed separately or fetched from another endpoint
+      projectId: apiTask.projetId,
+      projectName: apiTask.projetName
     };
   }
 

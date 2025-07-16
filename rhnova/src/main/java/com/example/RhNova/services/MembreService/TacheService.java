@@ -14,6 +14,7 @@ public interface TacheService {
     Tachedto getTacheById(String id);
     List<Tachedto> getTachesByMembre(String membreId);
     List<Tachedto> getTachesByEquipe(String equipeId);
+    List<Tachedto> getTachesByProjet(String projetId);
     List<Tachedto> filterTaches(StatutTache statut, String priorite);
     Tachedto updateStatut(String id, StatutTache statut);
     Tachedto updateProgression(String id, Integer progression);

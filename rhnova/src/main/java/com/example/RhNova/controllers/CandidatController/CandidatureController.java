@@ -35,6 +35,11 @@ public class CandidatureController {
         candidatureService.deleteCandidature(id);
     }
 
+    @PutMapping("/candidat/{candidatId}/offre/{offreId}/processed")
+    public Candidaturedto updateProcessedStatus(@PathVariable String candidatId, @PathVariable String offreId, @RequestParam boolean isProcessed) {
+        return candidatureService.updateCandidatureProcessedStatusByCandidatAndOffre(candidatId, offreId, isProcessed);
+    }
+
     @GetMapping("/candidat/{candidatId}")
     public List<Candidaturedto> getCandidaturesByCandidat(@PathVariable String candidatId) {
         return candidatureService.getCandidaturesByCandidatId(candidatId);
@@ -51,5 +56,4 @@ public class CandidatureController {
     }
 
   
-
 }

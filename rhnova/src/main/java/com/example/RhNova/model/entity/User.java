@@ -1,4 +1,5 @@
 package com.example.RhNova.model.entity;
+import java.time.LocalDateTime;
 import java.util.List;
 import com.example.RhNova.model.entity.Candidat.Candidature;
 import com.example.RhNova.model.entity.Manager.Equipe;
@@ -34,6 +35,10 @@ public class User {
 
     @DBRef
     private List<Candidature> candidatures; //accéder à toutes les candidatures d'un user.
+
+    // Fields for OTP functionality
+    private String resetOtp;
+    private LocalDateTime otpExpirationTime;
 
     // Constructeur personnalisé utile à l'inscription
     public User(String name, String email, String password, Role role) {

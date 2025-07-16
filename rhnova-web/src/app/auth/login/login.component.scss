@@ -315,6 +315,19 @@
   font-weight: 500;
 }
 
+.forgot-password-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: white;
+    text-decoration: underline;
+  }
+}
+
 .forgot-link {
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;

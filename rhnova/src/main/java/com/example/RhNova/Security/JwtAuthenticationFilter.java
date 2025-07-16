@@ -38,7 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userEmail = jwtUtil.extractUsername(jwt);
+        try {
+            userEmail = jwtUtil.extractUsername(jwt);
+        } catch (Exception e) {
+            // If JWT is malformed or invalid, just continue without authentication
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);

@@ -214,33 +214,7 @@ export class TeamMemberDashboardComponent implements OnInit {
 
   private loadMockTaskData(): void {
     this.myTasks = [
-      {
-        id: '1',
-        title: 'Compléter le module d\'authentification utilisateur',
-        description: 'Implémenter les fonctionnalités de connexion et d\'inscription',
-        status: 'In Progress',
-        priority: 'High',
-        dueDate: new Date('2025-07-15'),
-        progress: 75
-      },
-      {
-        id: '2',
-        title: 'Écrire des tests unitaires pour les endpoints API',
-        description: 'Créer une couverture de test complète',
-        status: 'Pending',
-        priority: 'Medium',
-        dueDate: new Date('2025-07-20'),
-        progress: 0
-      },
-      {
-        id: '3',
-        title: 'Mettre à jour la documentation',
-        description: 'Mettre à jour la documentation API avec les nouveaux endpoints',
-        status: 'Completed',
-        priority: 'Low',
-        dueDate: new Date('2025-06-25'),
-        progress: 100
-      }
+    
     ];
 
     this.dashboardStats = {

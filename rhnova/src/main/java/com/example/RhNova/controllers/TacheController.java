@@ -23,14 +23,22 @@ public class TacheController {
     // MANAGER ENDPOINTS
     
     /**
-     * Manager creates a new task
+     * Manager creates a new task (now must be within a project)
      */
     @PostMapping("/manager/create")
     public ResponseEntity<Tachedto> createTask(@RequestBody Tachedto dto) {
         try {
             if (!authUtil.hasRole("MANAGER")) {
+                System.out.println("Unauthorized access attempt by user: " + authUtil.getCurrentUserEmail());
                 return ResponseEntity.status(403).build();
             }
+            
+            // Validate that the task has a project ID
+            if (dto.getProjetId() == null || dto.getProjetId().isEmpty()) {
+                System.out.println("Task creation failed: Project ID is required");
+                return ResponseEntity.badRequest().build(); // Task must be associated with a project
+            }
+            System.out.println("Creating task for project ID: " + dto.getProjetId() + " by user: " + authUtil.getCurrentUserEmail());
             Tachedto createdTask = tacheService.createTaskByManager(dto);
             return ResponseEntity.ok(createdTask);
         } catch (Exception e) {

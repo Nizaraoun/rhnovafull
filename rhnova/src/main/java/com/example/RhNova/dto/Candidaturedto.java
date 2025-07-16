@@ -10,6 +10,7 @@ public class Candidaturedto {
     private String id;
     private LocalDate dateCandidature;
     private StatutCandidature statut;
+    private boolean isProcessed = false; // New boolean field
     private String candidatId;
     private String offreId;
     private String profilId;

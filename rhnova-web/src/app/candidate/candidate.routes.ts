@@ -14,10 +14,10 @@ export const CANDIDATE_ROUTES: Routes = [
     path: 'profile',
     loadComponent: () => import('./profile/candidate-profile.component').then(c => c.CandidateProfileComponent)
   },
-  {
-    path: 'cv',
-    loadComponent: () => import('./cv/candidate-cv.component').then(c => c.CandidateCvComponent)
-  },
+  // {
+  //   path: 'cv',
+  //   loadComponent: () => import('./cv/candidate-cv.component').then(c => c.CandidateCvComponent)
+  // },
   {
     path: 'jobs',
     loadComponent: () => import('./jobs/jobs-list.component').then(c => c.JobsListComponent)

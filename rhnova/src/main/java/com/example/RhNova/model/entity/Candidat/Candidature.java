@@ -22,6 +22,8 @@ public class Candidature {
 
     private StatutCandidature statut;
 
+    private boolean isProcessed = false; // New boolean field
+
     @DBRef
     private User candidat;
 

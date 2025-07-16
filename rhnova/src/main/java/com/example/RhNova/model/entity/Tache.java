@@ -39,6 +39,9 @@ public class Tache {
     @DBRef
     private User createdBy; // User who created the task (usually manager)
     
+    @DBRef
+    private Projet projet; // Project this task belongs to
+    
     private LocalDateTime dateCreation; // When the task was created
     
     private LocalDateTime lastUpdated; // When the task was last updated

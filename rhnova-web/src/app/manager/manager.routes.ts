@@ -34,5 +34,9 @@ export const MANAGER_ROUTES: Routes = [
   {
     path: 'manager-team',
     loadComponent: () => import('./teams/manager-teams.component').then(c => c.ManagerTeamsComponent)
+  },
+  {
+    path: 'projects',
+    loadComponent: () => import('./projects/manager-projects.component').then(c => c.ManagerProjectsComponent)
   }
 ];

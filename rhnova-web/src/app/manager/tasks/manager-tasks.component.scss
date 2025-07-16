@@ -421,6 +421,14 @@
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  
+  // Add smooth transitions for better performance
+  transition: opacity 0.2s ease-in-out;
+  opacity: 1;
+  
+  // Hardware acceleration for better performance
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .modal-content {
@@ -431,6 +439,15 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  // Add smooth transitions and hardware acceleration
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  transform: scale(1);
+  opacity: 1;
+  will-change: transform, opacity;
+  
+  // Optimize scrolling performance
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-header {

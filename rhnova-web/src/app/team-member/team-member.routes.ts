@@ -27,5 +27,7 @@ export const TEAM_MEMBER_ROUTES: Routes = [
   {
     path: 'update-task',
     loadComponent: () => import('./tasks/my-tasks.component').then(c => c.MyTasksComponent)
-  }
+  },
+
+  
 ];

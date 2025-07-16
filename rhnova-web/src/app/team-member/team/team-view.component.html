@@ -51,7 +51,7 @@
   </div>
 
   <!-- Projects Section -->
-  <div class="projects-section" *ngIf="currentTeam">
+  <!-- <div class="projects-section" *ngIf="currentTeam">
     <h3>Projets en cours</h3>
     <div class="projects-grid">
       <div *ngFor="let project of currentTeam.projects" class="project-card">
@@ -61,7 +61,7 @@
         <div class="project-name">{{ project }}</div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Team Members Section -->
   <div class="members-section" *ngIf="currentTeam">
@@ -105,14 +105,7 @@
             <span>Dans l'équipe depuis {{ formatJoinDate(member.joinDate) }}</span>
           </div>
 
-          <div class="skills-section">
-            <h5>Compétences</h5>
-            <div class="skills-tags">
-              <span *ngFor="let skill of member.skills" class="skill-tag">
-                {{ skill }}
-              </span>
-            </div>
-          </div>
+          
         </div>
 
         <div class="member-actions" *ngIf="!isCurrentUser(member.name)">

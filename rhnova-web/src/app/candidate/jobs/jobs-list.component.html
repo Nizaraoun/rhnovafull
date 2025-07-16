@@ -45,11 +45,18 @@
   </div>
 
   <!-- Jobs List -->
-  <div class="jobs-container">    <div class="jobs-count">
+  <div class="jobs-container">
+    <div class="jobs-count">
       <p>{{ filteredJobs().length }} emploi{{ filteredJobs().length !== 1 ? 's' : '' }} trouvé{{ filteredJobs().length !== 1 ? 's' : '' }}</p>
     </div>
 
-    <div class="jobs-grid">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Chargement des emplois...</p>
+    </div>
+
+    <div class="jobs-grid" *ngIf="!isLoading()">
       <div 
         *ngFor="let job of filteredJobs()" 
         class="job-card"
@@ -133,7 +140,7 @@
       </div>
     </div>
 
-    <div *ngIf="filteredJobs().length === 0" class="no-jobs">
+    <div *ngIf="filteredJobs().length === 0 && !isLoading()" class="no-jobs">
       <div class="no-jobs-icon">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <circle cx="11" cy="11" r="8"/>

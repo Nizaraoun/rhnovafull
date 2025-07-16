@@ -12,7 +12,6 @@ interface TeamMember {
   status: 'online' | 'offline' | 'away';
   workload: number;
   joinDate: Date;
-  skills: string[];
 }
 
 interface Team {
@@ -73,7 +72,6 @@ export class TeamViewComponent implements OnInit {
         console.error('Error loading team info:', error);
         this.isLoading = false;
         // Fallback to mock data if API fails
-        this.loadMockTeamInfo();
       }
     });
   }
@@ -84,7 +82,7 @@ export class TeamViewComponent implements OnInit {
       description: apiTeam.description,
       manager: apiTeam.manager?.name || 'Non assigné', // Handle null manager
       createdDate: new Date(), // API doesn't provide this, could be added later
-      projects: this.generateMockProjects(), // Generate some mock projects for display
+      projects: [],
       members: apiTeam.membres.map((apiMember, index) => ({
         id: parseInt(apiMember.id) || index + 1,
         name: apiMember.name,
@@ -94,7 +92,6 @@ export class TeamViewComponent implements OnInit {
         status: this.generateRandomStatus(),
         workload: Math.floor(Math.random() * 60) + 20, // 20-80% workload
         joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-        skills: this.generateSkillsForRole(apiMember.role)
       }))
     };
   }
@@ -124,110 +121,10 @@ export class TeamViewComponent implements OnInit {
     return 'online';
   }
 
-  private generateMockProjects(): string[] {
-    const possibleProjects = [
-      'Application RH Nova Web',
-      'Module de gestion des congés',
-      'API de gestion des utilisateurs',
-      'Dashboard analytics',
-      'Système de notification',
-      'Module de recrutement',
-      'Gestion des performances'
-    ];
-    
-    const numProjects = Math.floor(Math.random() * 4) + 2; // 2-5 projects
-    const shuffled = possibleProjects.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, numProjects);
-  }
+  
+  
 
-  private generateSkillsForRole(role: string): string[] {
-    const skillSets: { [key: string]: string[] } = {
-      'RESPONSABLERH': ['Gestion RH', 'Recrutement', 'Formation', 'Droit du travail'],
-      'MEMBRE_EQUIPE': ['TypeScript', 'Angular', 'JavaScript', 'CSS'],
-      'MANAGER': ['Leadership', 'Gestion de projet', 'Planification', 'Communication'],
-      'ADMIN': ['Administration système', 'Sécurité', 'Base de données', 'DevOps'],
-      'default': ['Communication', 'Travail d\'équipe', 'Problem solving']
-    };
-    
-    const skills = skillSets[role] || skillSets['default'];
-    const numSkills = Math.floor(Math.random() * 3) + 2; // 2-4 skills
-    return skills.slice(0, numSkills);
-  }
-
-  private loadMockTeamInfo(): void {
-    // Mock data fallback - original implementation
-    this.currentTeam = {
-      id: 1,
-      name: 'Équipe Développement',
-      description: 'Équipe responsable du développement des applications web et mobiles pour RH Nova.',
-      manager: 'Jean Dupont',
-      createdDate: new Date('2024-01-15'),
-      projects: [
-        'Application RH Nova Web',
-        'Module de gestion des congés',
-        'API de gestion des utilisateurs',
-        'Dashboard analytics'
-      ],
-      members: [
-        {
-          id: 1,
-          name: 'Sarah Martin',
-          email: 'sarah.martin@company.com',
-          position: 'Développeur Senior',
-          avatar: '/assets/images/default-avatar.png',
-          status: 'online',
-          workload: 85,
-          joinDate: new Date('2023-03-15'),
-          skills: ['Angular', 'TypeScript', 'Node.js', 'Python']
-        },
-        {
-          id: 2,
-          name: 'Ahmed Ben Ali',
-          email: 'ahmed.benali@company.com',
-          position: 'Développeur Frontend',
-          avatar: '/assets/images/default-avatar.png',
-          status: 'online',
-          workload: 70,
-          joinDate: new Date('2023-06-01'),
-          skills: ['React', 'JavaScript', 'CSS', 'HTML']
-        },
-        {
-          id: 3,
-          name: 'Emma Dubois',
-          email: 'emma.dubois@company.com',
-          position: 'Développeur Backend',
-          avatar: '/assets/images/default-avatar.png',
-          status: 'away',
-          workload: 60,
-          joinDate: new Date('2023-08-10'),
-          skills: ['Java', 'Spring Boot', 'PostgreSQL', 'Docker']
-        },
-        {
-          id: 4,
-          name: 'Thomas Rousseau',
-          email: 'thomas.rousseau@company.com',
-          position: 'DevOps Engineer',
-          avatar: '/assets/images/default-avatar.png',
-          status: 'offline',
-          workload: 75,
-          joinDate: new Date('2023-04-20'),
-          skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD']
-        },
-        {
-          id: 5,
-          name: 'Marie Blanchard',
-          email: 'marie.blanchard@company.com',
-          position: 'UI/UX Designer',
-          avatar: '/assets/images/default-avatar.png',
-          status: 'online',
-          workload: 55,
-          joinDate: new Date('2023-09-05'),
-          skills: ['Figma', 'Adobe XD', 'Sketch', 'Prototyping']
-        }
-      ]
-    };
-  }
-
+  
   getStatusClass(status: string): string {
     switch (status) {
       case 'online': return 'status-online';

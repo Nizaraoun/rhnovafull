@@ -4,15 +4,28 @@ import { AdminGuard } from './shared/guards/admin.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/login',
+    loadComponent: () => import('./landing/landing.component').then(c => c.LandingComponent),
     pathMatch: 'full'
   },
   {
     path: 'login',
     loadComponent: () => import('./auth/login/login.component').then(c => c.LoginComponent)
-  },  {
+  },
+  {
     path: 'register',
     loadComponent: () => import('./auth/register/register.component').then(c => c.RegisterComponent)
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent)
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./auth/reset-password/reset-password.component').then(c => c.ResetPasswordComponent)
   },
   {
     path: '',

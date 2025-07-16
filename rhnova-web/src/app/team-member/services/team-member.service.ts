@@ -11,14 +11,36 @@ export interface TeamMemberTask {
   dateDebut: string;
   dateFin: string;
   statut: 'A_FAIRE' | 'EN_COURS' | 'TERMINEE';
-  membreId: string;
-  membreName: string;
+  assigneeId: string;
+  assigneeName: string;
   progression: number;
   evaluation?: number;
   createdById: string;
   createdByName: string;
   dateCreation: string;
   lastUpdated: string;
+  projetId: string; // Now required since tasks are always part of a project
+  projetName?: string;
+}
+
+export interface TeamMemberProject {
+  id: string;
+  nom: string;
+  description: string;
+  dateDebut: string;
+  dateFin: string;
+  budget: number;
+  statut: 'A_FAIRE' | 'EN_COURS' | 'TERMINEE' | 'ANNULE';
+  progression: number;
+  managerId: string;
+  managerName: string;
+  equipeId: string;
+  equipeName: string;
+  dateCreation: string;
+  lastUpdated: string;
+  myTasks?: TeamMemberTask[];
+  totalTasks?: number;
+  completedTasks?: number;
 }
 
 export interface TeamMember {
@@ -54,6 +76,15 @@ export class TeamMemberService extends BaseHttpService {
   constructor(http: HttpClient) {
     super(http);
   }
+  // Project-related methods for team members
+  getMyTeamProjects(): Observable<TeamMemberProject[]> {
+    return this.get<TeamMemberProject[]>('/api/projets/member/my-team-projects');
+  }
+
+  getProjectTasks(projectId: string): Observable<TeamMemberTask[]> {
+    return this.get<TeamMemberTask[]>(`/api/projets/${projectId}/tasks`);
+  }
+
   // Team-related methods
   getMyTeamDetails(): Observable<DetailedTeam> {
     return this.get<DetailedTeam>('/api/equipes/my-team');
@@ -63,7 +94,7 @@ export class TeamMemberService extends BaseHttpService {
     return this.get<TeamMember>('/api/equipes/my-team/manager');
   }
 
-  // Task-related methods for team members
+  // Task-related methods for team members (now project-based)
   getMyTasks(): Observable<TeamMemberTask[]> {
     return this.get<TeamMemberTask[]>('/api/taches/member/my-tasks');
   }
@@ -88,5 +119,26 @@ export class TeamMemberService extends BaseHttpService {
 
   getTaskDetails(taskId: string): Observable<TeamMemberTask> {
     return this.get<TeamMemberTask>(`/api/taches/details/${taskId}`);
+  }
+
+  // New project-based task methods
+  getTasksForProject(projetId: string): Observable<TeamMemberTask[]> {
+    return this.get<TeamMemberTask[]>(`/api/projets/${projetId}/tasks`);
+  }
+
+  // Update task progress within project context
+  updateProjectTaskProgress(taskId: string, progression: number): Observable<TeamMemberTask> {
+    return this.patch<TeamMemberTask>(
+      `/api/taches/member/${taskId}/progress?progression=${progression}`,
+      {}
+    );
+  }
+
+  // Update task status within project context
+  updateProjectTaskStatus(taskId: string, status: string): Observable<TeamMemberTask> {
+    return this.patch<TeamMemberTask>(
+      `/api/taches/member/${taskId}/status?status=${status}`,
+      {}
+    );
   }
 }

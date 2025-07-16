@@ -31,7 +31,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Allow authentication endpoints (except internal user creation)
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/forgot-password", "/api/auth/verify-otp-reset-password").permitAll()
                 // Restrict internal user creation to HR and admin
                 .requestMatchers("/api/auth/create-internal-user", "/api/hr/leaves/**").permitAll()
                 // .hasAnyRole("ADMIN", "RESPONSABLERH")
@@ -57,8 +57,10 @@ public class SecurityConfig {
                 // Protect candidate endpoints
                 .requestMatchers("/api/candidats/**").
                 permitAll()
+
                 // hasAnyRole("ADMIN", "RESPONSABLERH", "CANDIDAT")
                 // Allow other requests but require authentication
+                .requestMatchers("/api/projets/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

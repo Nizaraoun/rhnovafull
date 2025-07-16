@@ -11,8 +11,10 @@ import { AuthResponse, LoginRequest, RegisterRequest, UserDto } from '../../shar
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
-  private authStatusSubject = new BehaviorSubject<boolean>(this.isAuthenticated());
-  public authStatus$ = this.authStatusSubject.asObservable();  constructor(
+  private authStatusSubject = new BehaviorSubject<boolean>(false);
+  public authStatus$ = this.authStatusSubject.asObservable();
+
+  constructor(
     private http: HttpClient, 
     private router: Router,
     private notificationService: NotificationService,
@@ -20,6 +22,7 @@ export class AuthService {
   ) {
     // Check token validity on service initialization only in browser
     if (isPlatformBrowser(this.platformId)) {
+      this.authStatusSubject.next(this.isAuthenticated());
       this.checkTokenValidity();
     }
   }
@@ -31,6 +34,19 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials);
   }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  verifyOtpAndResetPassword(resetData: { email: string, otp: string, newPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/verify-otp-reset-password`, resetData);
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('auth_token');
@@ -38,7 +54,9 @@ export class AuthService {
     }
     this.authStatusSubject.next(false);
     this.router.navigate(['/auth/login']);
-  }saveAuthData(response: AuthResponse): void {
+  }
+
+  saveAuthData(response: AuthResponse): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user_data', JSON.stringify({
@@ -72,6 +90,7 @@ export class AuthService {
     
     return true;
   }
+
   getUserData(): any {
     if (isPlatformBrowser(this.platformId)) {
       const userData = localStorage.getItem('user_data');
@@ -101,7 +120,9 @@ export class AuthService {
       console.error('Error parsing token:', error);
       return true; // Treat invalid tokens as expired
     }
-  }  private handleExpiredToken(): void {
+  }
+
+  private handleExpiredToken(): void {
     console.warn('Token has expired. Logging out user.');
     this.notificationService.showWarning('Your session has expired. Please log in again.');
     if (isPlatformBrowser(this.platformId)) {

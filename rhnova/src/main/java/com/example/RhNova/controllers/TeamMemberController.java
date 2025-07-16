@@ -1,8 +1,10 @@
 package com.example.RhNova.controllers;
 
 import com.example.RhNova.dto.DetailedEquipeDto;
+import com.example.RhNova.dto.ProjetDto;
 import com.example.RhNova.dto.userdto;
 import com.example.RhNova.services.Managerservice.EquipeService;
+import com.example.RhNova.services.Managerservice.ProjetService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,9 +19,11 @@ import java.util.List;
 public class TeamMemberController {
 
     private final EquipeService equipeService;
+    private final ProjetService projetService;
 
-    public TeamMemberController(EquipeService equipeService) {
+    public TeamMemberController(EquipeService equipeService, ProjetService projetService) {
         this.equipeService = equipeService;
+        this.projetService = projetService;
     }
 
     /**
@@ -71,6 +75,19 @@ public class TeamMemberController {
             }
             
             return ResponseEntity.ok(teamDetails.getManager());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Get all projects assigned to the current user's team
+     */
+    @GetMapping("/my-team/projects")
+    public ResponseEntity<List<ProjetDto>> getMyTeamProjects() {
+        try {
+            List<ProjetDto> projects = projetService.getMyTeamProjets();
+            return ResponseEntity.ok(projects);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

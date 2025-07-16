@@ -1,0 +1,317 @@
+<!-- Modern Landing Page -->
+<div class="landing-page">
+  
+  <!-- Navigation Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <div class="logo">
+            <div class="logo-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2"/>
+                <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+                <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <span class="logo-text">RHNova</span>
+          </div>
+        </div>
+        <div class="nav-links">
+          <a href="#features" (click)="scrollToSection('features')" class="nav-link">Fonctionnalités</a>
+          <a href="#how-it-works" (click)="scrollToSection('how-it-works')" class="nav-link">Comment ça marche</a>
+          <a href="#testimonials" (click)="scrollToSection('testimonials')" class="nav-link">Témoignages</a>
+          <a routerLink="/login" class="btn btn-outline btn-small">Connexion</a>
+        </div>
+        <div class="mobile-menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-background">
+      <div class="bg-gradient"></div>
+      <div class="bg-pattern">
+        <div class="pattern-dot" style="top: 10%; left: 10%;"></div>
+        <div class="pattern-dot" style="top: 20%; left: 80%;"></div>
+        <div class="pattern-dot" style="top: 60%; left: 5%;"></div>
+        <div class="pattern-dot" style="top: 80%; left: 90%;"></div>
+        <div class="pattern-circle" style="top: 30%; left: 70%;"></div>
+        <div class="pattern-circle" style="top: 70%; left: 20%;"></div>
+      </div>
+    </div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-text-content">
+          <h1 class="hero-title">
+            <span class="title-line animate-slide-up">Recrutez.</span>
+            <span class="title-line animate-slide-up delay-1">Candidaturez.</span>
+            <span class="title-line animate-slide-up delay-2">Gérez.</span>
+          </h1>
+          
+          <div class="hero-description-with-image">
+            <div class="hero-text-section">
+              <p class="hero-subtitle animate-fade-in delay-3">
+                La plateforme révolutionnaire qui transforme la gestion RH et connecte les talents aux opportunités d'exception dans un écosystème digital innovant.
+              </p>
+        
+
+              <div class="hero-cta animate-fade-in delay-4">
+                <a routerLink="/register" class="btn btn-primary btn-large">
+                  <span>Je suis recruteur</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5l7 7-7 7"/>
+                  </svg>
+                </a>
+                <a routerLink="/register" class="btn btn-secondary btn-large">
+                  <span>Je cherche un emploi</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                  </svg>
+                </a>
+                <a routerLink="/register" class="btn btn-outline btn-large">
+                  <span>Espace Manager</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                </a>
+                
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      
+     
+    </div>
+  </section>
+
+  <!-- Statistics Section -->
+  <section class="statistics">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Des chiffres qui parlent</h2>
+        <p class="section-subtitle">Rejoignez des milliers d'utilisateurs qui nous font confiance</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item animate-fade-in delay-1">
+          <div class="stat-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-number" data-count="1250">0</h3>
+            <span class="stat-plus">+</span>
+            <p class="stat-label">Offres d'emploi actives</p>
+            <span class="stat-trend">↗ +15% ce mois</span>
+          </div>
+        </div>
+        
+        <div class="stat-item animate-fade-in delay-2">
+          <div class="stat-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-number" data-count="850">0</h3>
+            <span class="stat-plus">+</span>
+            <p class="stat-label">Entreprises partenaires</p>
+            <span class="stat-trend">↗ +22% ce mois</span>
+          </div>
+        </div>
+        
+        <div class="stat-item animate-fade-in delay-3">
+          <div class="stat-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-number" data-count="5240">0</h3>
+            <span class="stat-plus">+</span>
+            <p class="stat-label">Candidats inscrits</p>
+            <span class="stat-trend">↗ +31% ce mois</span>
+          </div>
+        </div>
+        
+        
+      </div>
+      
+      <!-- Additional metrics -->
+      <div class="secondary-stats">
+        <div class="secondary-stat">
+          <span class="secondary-number">2.5M</span>
+          <span class="secondary-label">Candidatures traitées</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="secondary-number">48h</span>
+          <span class="secondary-label">Temps moyen de réponse</span>
+        </div>
+        <div class="secondary-stat">
+          <span class="secondary-number">156</span>
+          <span class="secondary-label">Villes couvertes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Une solution pour chaque profil</h2>
+        <p class="section-subtitle">Découvrez comment notre plateforme répond à vos besoins spécifiques</p>
+      </div>
+
+      <!-- HR Features -->
+      <div class="feature-category">
+        <h3 class="category-title">Pour les RH</h3>
+        <div class="features-grid">
+          <div class="feature-card" *ngFor="let feature of hrFeatures">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h4 class="feature-title">{{ feature.title }}</h4>
+            <p class="feature-description">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate Features -->
+      <div class="feature-category">
+        <h3 class="category-title">Pour les Candidats</h3>
+        <div class="features-grid">
+          <div class="feature-card" *ngFor="let feature of candidateFeatures">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h4 class="feature-title">{{ feature.title }}</h4>
+            <p class="feature-description">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manager Features -->
+      <div class="feature-category">
+        <h3 class="category-title">Pour les Managers de Projet</h3>
+        <div class="features-grid">
+          <div class="feature-card" *ngFor="let feature of managerFeatures">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h4 class="feature-title">{{ feature.title }}</h4>
+            <p class="feature-description">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Comment ça marche ?</h2>
+        <p class="section-subtitle">Démarrez en 3 étapes simples</p>
+      </div>
+
+      <div class="steps-container">
+        <div class="step" *ngFor="let step of steps; let i = index">
+          <div class="step-number">{{ step.number }}</div>
+          <div class="step-content">
+            <h3 class="step-title">{{ step.title }}</h3>
+            <p class="step-description">{{ step.description }}</p>
+          </div>
+          <div class="step-connector" *ngIf="i < steps.length - 1"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Ce que disent nos utilisateurs</h2>
+        <p class="section-subtitle">Découvrez les témoignages de ceux qui nous font confiance</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+          <div class="testimonial-content">
+            <p class="testimonial-text">"{{ testimonial.content }}"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">{{ testimonial.avatar }}</div>
+            <div class="author-info">
+              <h4 class="author-name">{{ testimonial.name }}</h4>
+              <p class="author-role">{{ testimonial.role }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="cta-title">Rejoignez notre plateforme dès aujourd'hui !</h2>
+        <p class="cta-subtitle">Commencez votre parcours vers de nouvelles opportunités</p>
+        <div class="cta-buttons">
+          <a routerLink="/register" class="btn btn-primary btn-large">Créer un compte</a>
+          <button class="btn btn-outline btn-large" (click)="scrollToSection('features')">En savoir plus</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-brand">RHNova</h3>
+          <p class="footer-description">La plateforme qui connecte les talents aux opportunités.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">Liens utiles</h4>
+          <ul class="footer-links">
+            <li><a href="#about">À propos</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#terms">Conditions</a></li>
+            <li><a href="#legal">Mentions légales</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">Suivez-nous</h4>
+          <div class="social-links">
+            <a href="#" class="social-link">LinkedIn</a>
+            <a href="#" class="social-link">Facebook</a>
+            <a href="#" class="social-link">Twitter</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 RHNova. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+</div>

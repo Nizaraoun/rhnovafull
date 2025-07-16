@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { BaseHttpService } from './base-http.service';
 import { CandidatureDto, StatutCandidature } from '../models/candidature.model';
 import { AuthService } from '../../auth/services/auth.service';
@@ -18,6 +19,17 @@ export interface CandidatureResponse {
   success: boolean;
   message: string;
   candidature?: CandidatureDto;
+}
+
+export interface CompatibilityAnalysisRequest {
+  candidate_id: string;
+  job_offer_id: string;
+}
+
+export interface CompatibilityAnalysisResponse {
+  compatibility_score?: number;
+  analysis?: any;
+  // Add other fields based on the actual API response
 }
 
 @Injectable({
@@ -60,7 +72,28 @@ export class CandidatureService extends BaseHttpService {
     };
 
     console.log('Applying for job:', jobOfferId, 'User:', userId, candidatureData);
+
+    // Trigger compatibility analysis (fire and forget)
+    this.analyzeCompatibility(userId, jobOfferId).subscribe({
+      next: (result) => console.log('Compatibility analysis completed:', result),
+      error: (error) => console.error('Compatibility analysis failed:', error)
+    });
+
     return this.post<CandidatureResponse>('/api/candidatures', candidatureData);
+  }
+
+  /**
+   * Analyze compatibility between candidate and job offer
+   */
+  private analyzeCompatibility(candidateId: string, jobOfferId: string): Observable<CompatibilityAnalysisResponse> {
+    const compatibilityData: CompatibilityAnalysisRequest = {
+      candidate_id: candidateId,
+      job_offer_id: jobOfferId
+    };
+
+    console.log('Analyzing compatibility:', compatibilityData);
+    
+    return this.http.post<CompatibilityAnalysisResponse>('http://localhost:8000/analyze-compatibility', compatibilityData);
   }
 
   /**
@@ -73,7 +106,26 @@ export class CandidatureService extends BaseHttpService {
     }
 
     console.log('Getting candidatures for user:', userId);
-    return this.get<CandidatureDto[]>(`/api/candidatures/candidat/${userId}`);
+    return this.get<any>(`/api/candidatures/candidat/${userId}`)
+      .pipe(
+        map(response => {
+          // Handle different response formats
+          if (Array.isArray(response)) {
+            return response;
+          } else if (response && response.content && Array.isArray(response.content)) {
+            return response.content;
+          } else if (response && response.data && Array.isArray(response.data)) {
+            return response.data;
+          } else {
+            console.warn('Invalid candidatures response format:', response);
+            return [];
+          }
+        }),
+        catchError((error: any) => {
+          console.error('Error fetching candidatures:', error);
+          return of([]);
+        })
+      );
   }
 
   /**

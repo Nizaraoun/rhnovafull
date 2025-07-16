@@ -2,7 +2,7 @@
   <div class="page-header">
     <div class="header-content">
       <h1>Gérer les Tâches</h1>
-      <p>Créer, assigner et suivre les tâches pour les membres de votre équipe</p>
+      <p>Créer, assigner et suivre les tâches de vos projets pour les membres de votre équipe</p>
     </div>
     <button class="btn btn-primary" (click)="openCreateModal()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -46,7 +46,15 @@
       >
     </div>
     
-    <div class="filter-selects">      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+    <div class="filter-selects">
+      <select [(ngModel)]="projectFilter" (change)="applyFilters()" class="filter-select">
+        <option value="all">Tous les Projets</option>
+        <option *ngFor="let project of projects; trackBy: trackByProjectId" [value]="project.id">
+          {{ project.nom }}
+        </option>
+      </select>
+      
+      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
         <option value="all">Tous les Statuts</option>
         <option value="Pending">En Attente</option>
         <option value="In Progress">En Cours</option>
@@ -65,7 +73,7 @@
 
   <!-- Tasks List -->
   <div class="tasks-container" *ngIf="!isLoading">
-    <div class="task-item" *ngFor="let task of filteredTasks">
+    <div class="task-item" *ngFor="let task of filteredTasks; trackBy: trackByTaskId">
       <div class="task-header">
         <h3>{{ task.title }}</h3>
         <div class="task-badges">
@@ -78,9 +86,11 @@
         </div>
       </div>
       
-      <p class="task-description">{{ task.description }}</p>
-      
-      <div class="task-meta">        <div class="meta-item">
+      <div class="task-meta">
+        <div class="meta-item">
+          <strong>Projet :</strong> {{ task.projectName }}
+        </div>
+        <div class="meta-item">
           <strong>Assignée à :</strong> {{ task.assignedTo }}
         </div>
         <div class="meta-item">
@@ -99,7 +109,8 @@
       </div>
       
       <div class="task-actions">
-        <div class="status-actions">          <button 
+        <div class="status-actions">
+          <button 
             class="status-btn pending" 
             (click)="changeTaskStatus(task.id, 'Pending')"
             [disabled]="task.status === 'Pending'"
@@ -140,7 +151,9 @@
         </div>
       </div>
     </div>
-  </div>  <!-- Loading State -->
+  </div>
+
+  <!-- Loading State -->
   <div class="loading-container" *ngIf="isLoading">
     <div class="loading-spinner"></div>
     <p>Chargement des tâches...</p>
@@ -154,7 +167,7 @@
       <line x1="16" y1="13" x2="8" y2="13"/>
       <line x1="16" y1="17" x2="8" y2="17"/>
     </svg>    <h3>Aucune tâche trouvée</h3>
-    <p>Créez votre première tâche ou ajustez vos filtres</p>
+    <p>Créez votre première tâche dans un projet ou ajustez vos filtres</p>
     <button class="btn btn-primary" (click)="openCreateModal()">Créer une Tâche</button>
   </div>
 
@@ -172,6 +185,19 @@
       </div>
       
       <form [formGroup]="taskForm" (ngSubmit)="createTask()">
+        <div class="form-group">
+          <label for="projectId">Projet *</label>
+          <select id="projectId" formControlName="projectId">
+            <option value="">Sélectionnez un projet</option>
+            <option *ngFor="let project of projects; trackBy: trackByProjectId" [value]="project.id">
+              {{ project.nom }}
+            </option>
+          </select>
+          <div class="error" *ngIf="taskForm.get('projectId')?.invalid && taskForm.get('projectId')?.touched">
+            Veuillez sélectionner un projet
+          </div>
+        </div>
+        
         <div class="form-group">
           <label for="title">Task Title *</label>
           <input type="text" id="title" formControlName="title" placeholder="Enter task title">
@@ -193,7 +219,7 @@
             <label for="assignedToId">Assign to *</label>
             <select id="assignedToId" formControlName="assignedToId">
               <option value="">Select team member</option>
-              <option *ngFor="let member of teamMembers" [value]="member.id">
+              <option *ngFor="let member of teamMembers; trackBy: trackByMemberId" [value]="member.id">
                 {{ member.name }} - {{ member.role }}
               </option>
             </select>
@@ -220,8 +246,11 @@
         </div>
         
         <div class="modal-actions">
-          <button type="button" class="btn btn-outline" (click)="closeCreateModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="taskForm.invalid">Créer la Tâche</button>
+          <button type="button" class="btn btn-outline" (click)="closeCreateModal()" [disabled]="isCreatingTask">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="taskForm.invalid || isCreatingTask">
+            <span *ngIf="isCreatingTask">Création...</span>
+            <span *ngIf="!isCreatingTask">Créer la Tâche</span>
+          </button>
         </div>
       </form>
     </div>
@@ -240,7 +269,21 @@
         </button>
       </div>
       
-      <form [formGroup]="taskForm" (ngSubmit)="updateTask()">        <div class="form-group">
+      <form [formGroup]="taskForm" (ngSubmit)="updateTask()">
+        <div class="form-group">
+          <label for="edit-projectId">Projet *</label>
+          <select id="edit-projectId" formControlName="projectId">
+            <option value="">Sélectionnez un projet</option>
+            <option *ngFor="let project of projects; trackBy: trackByProjectId" [value]="project.id">
+              {{ project.nom }}
+            </option>
+          </select>
+          <div class="error" *ngIf="taskForm.get('projectId')?.invalid && taskForm.get('projectId')?.touched">
+            Veuillez sélectionner un projet
+          </div>
+        </div>
+        
+        <div class="form-group">
           <label for="edit-title">Titre de la Tâche *</label>
           <input type="text" id="edit-title" formControlName="title" placeholder="Entrez le titre de la tâche">
           <div class="error" *ngIf="taskForm.get('title')?.invalid && taskForm.get('title')?.touched">
@@ -261,7 +304,7 @@
             <label for="edit-assignedToId">Assign to *</label>
             <select id="edit-assignedToId" formControlName="assignedToId">
               <option value="">Select team member</option>
-              <option *ngFor="let member of teamMembers" [value]="member.id">
+              <option *ngFor="let member of teamMembers; trackBy: trackByMemberId" [value]="member.id">
                 {{ member.name }} - {{ member.role }}
               </option>
             </select>
@@ -288,8 +331,11 @@
         </div>
         
         <div class="modal-actions">
-          <button type="button" class="btn btn-outline" (click)="closeEditModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="taskForm.invalid">Mettre à jour la Tâche</button>
+          <button type="button" class="btn btn-outline" (click)="closeEditModal()" [disabled]="isUpdatingTask">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="taskForm.invalid || isUpdatingTask">
+            <span *ngIf="isUpdatingTask">Mise à jour...</span>
+            <span *ngIf="!isUpdatingTask">Mettre à jour la Tâche</span>
+          </button>
         </div>
       </form>
     </div>

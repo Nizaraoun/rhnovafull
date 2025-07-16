@@ -117,7 +117,7 @@
         <p>Assign and monitor tasks</p>
       </div>
 
-      <div class="action-card" routerLink="/admin/reports">
+      <!-- <div class="action-card" routerLink="/admin/reports">
         <div class="action-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <line x1="18" y1="20" x2="18" y2="10"/>
@@ -127,7 +127,7 @@
         </div>
         <h3>Reports</h3>
         <p>View system reports and analytics</p>
-      </div>
+      </div> -->
 
      
 
@@ -171,44 +171,6 @@
     </div>
 
     <!-- System Analytics Chart -->
-    <div class="dashboard-widget chart-widget">
-      <div class="widget-header">
-        <h3>System Growth</h3>
-        <div class="chart-period">
-          <button class="period-btn active">7D</button>
-          <button class="period-btn">30D</button>
-          <button class="period-btn">90D</button>
-        </div>
-      </div>
-      <div class="chart-container">
-        <!-- Loading state -->
-        <div *ngIf="isLoading()" class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>Loading chart data...</p>
-        </div>
-        
-        <!-- Error state -->
-        <div *ngIf="error()" class="error-state">
-          <p>{{ error() }}</p>
-          <button (click)="refreshDashboard()" class="retry-btn">Retry</button>
-        </div>
-        
-        <!-- Chart with dynamic data -->
-        <div *ngIf="!isLoading() && !error()" class="simple-chart">
-          <div class="chart-bars">
-            <div class="chart-bar" 
-                 *ngFor="let data of employeeGrowthData()" 
-                 [style.height.%]="(data.count / getMaxCount()) * 100"
-                 [title]="data.day + ': ' + data.count + ' users'">
-            </div>
-          </div>
-          <div class="chart-labels">
-            <span *ngFor="let data of employeeGrowthData()">{{ data.day }}</span>
-          </div>
-        </div>
-      </div>
-    </div>    <!-- Pending Admin Tasks -->
-
     
   </div>
 </div>

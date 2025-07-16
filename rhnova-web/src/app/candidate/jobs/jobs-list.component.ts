@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CandidateService } from '../services/candidate.service';
 import { JobOfferDisplay, JobOfferFilters } from '../../shared/models/jobOfferBackend';
@@ -24,9 +24,14 @@ export class JobsListComponent implements OnInit, OnDestroy {
   
   allJobs = signal<Job[]>([]);
   filteredJobs = signal<Job[]>([]);
+  isLoading = signal(true);
+  isLoadingAppliedJobs = signal(false);
   private searchSubject = new Subject<string>();
 
-  constructor(private candidateService: CandidateService) {}
+  constructor(
+    private candidateService: CandidateService,
+    private router: Router
+  ) {}
   ngOnInit() {
     this.loadJobs();
     this.loadAppliedJobs();
@@ -45,8 +50,10 @@ export class JobsListComponent implements OnInit, OnDestroy {
     this.searchSubject.complete();
   }
   loadJobs() {
+    this.isLoading.set(true);
     this.candidateService.getAllJobOffers().subscribe({
       next: (jobOffers) => {
+        console.log('Loaded job offers:', jobOffers);
         // Convert JobOfferDisplay to Job interface with applied status
         const jobs: Job[] = jobOffers.map(offer => ({
           ...offer,
@@ -55,101 +62,49 @@ export class JobsListComponent implements OnInit, OnDestroy {
         
         this.allJobs.set(jobs);
         this.filteredJobs.set(jobs);
+        this.isLoading.set(false);
         
         // Load applied status after jobs are loaded
         this.loadAppliedJobs();
       },
       error: (error) => {
         console.error('Error loading job offers:', error);
-        // Fallback to mock data if API fails
-        this.loadMockJobs();
+        this.isLoading.set(false);
+        // Fallback to empty array on error
+        this.allJobs.set([]);
+        this.filteredJobs.set([]);
       }
     });
   }
 
   loadAppliedJobs() {
-    // Get all jobs and check which ones the user has applied for
-    const jobs = this.allJobs();
-    
-    jobs.forEach(job => {
-      this.candidateService.hasAppliedForJob(job.id).subscribe({
-        next: (hasApplied) => {
-          job.applied = hasApplied;
-          // Update the signals to trigger change detection
-          this.allJobs.set([...this.allJobs()]);
-          this.filterJobs(); // Re-apply filters with updated applied status
-        },
-        error: (error) => {
-          console.error(`Error checking applied status for job ${job.id}:`, error);
-        }
-      });
+    this.isLoadingAppliedJobs.set(true);
+    // Get all candidatures once and check which jobs the user has applied for
+    this.candidateService.getCandidateApplications().subscribe({
+      next: (candidatures) => {
+        console.log('Loaded candidatures:', candidatures);
+        // Create a Set of applied job IDs for efficient lookup
+        const appliedJobIds = new Set(candidatures.map(c => c.offreId));
+        
+        // Update jobs with applied status
+        const jobs = this.allJobs().map(job => ({
+          ...job,
+          applied: appliedJobIds.has(job.id)
+        }));
+        
+        this.allJobs.set(jobs);
+        this.filterJobs(); // Re-apply filters with updated applied status
+        this.isLoadingAppliedJobs.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading applied jobs:', error);
+        this.isLoadingAppliedJobs.set(false);
+        // Continue with jobs even if we can't load applied status
+      }
     });
   }
 
-  loadMockJobs() {
-    // Keep mock data as fallback
-    const mockJobs: Job[] = [
-      {
-        id: '1',
-        title: 'Frontend Developer',
-        department: 'Tech Solutions Inc.',
-        location: 'Casablanca, Morocco',
-        type: 'full-time',
-        salary: '25,000 - 35,000 MAD',
-        description: 'We are looking for a skilled Frontend Developer to join our dynamic team. You will be responsible for developing user-facing features using modern JavaScript frameworks and ensuring great user experience.',
-        requirements: ['Angular', 'TypeScript', 'HTML/CSS', 'JavaScript', 'Git'],
-        postedDate: new Date('2024-01-15'),
-        deadline: new Date('2024-02-15'),
-        status: 'active',
-        applied: false
-      },
-      {
-        id: '2',
-        title: 'Full Stack Developer',
-        department: 'Innovation Labs',
-        location: 'Rabat, Morocco',
-        type: 'full-time',
-        salary: '30,000 - 45,000 MAD',
-        description: 'Join our team as a Full Stack Developer and work on exciting projects that make a real impact. You will work with both frontend and backend technologies.',
-        requirements: ['React', 'Node.js', 'MongoDB', 'Express', 'AWS'],
-        postedDate: new Date('2024-01-10'),
-        deadline: new Date('2024-02-10'),
-        status: 'active',
-        applied: true
-      },
-      {
-        id: '3',
-        title: 'UI/UX Designer',
-        department: 'Creative Studio',
-        location: 'Marrakech, Morocco',
-        type: 'contract',
-        salary: '200 - 300 MAD/day',
-        description: 'We are seeking a creative UI/UX Designer to help us create beautiful and intuitive user interfaces for our web and mobile applications.',
-        requirements: ['Figma', 'Adobe XD', 'Sketch', 'Prototyping', 'User Research'],
-        postedDate: new Date('2024-01-12'),
-        deadline: new Date('2024-02-20'),
-        status: 'active',
-        applied: false
-      },
-      {
-        id: '4',
-        title: 'Marketing Intern',
-        department: 'StartupCorp',
-        location: 'Remote',
-        type: 'internship',
-        salary: '3,000 MAD/month',
-        description: 'Great opportunity for a marketing student to gain hands-on experience in digital marketing, social media management, and content creation.',
-        requirements: ['Social Media', 'Content Writing', 'Analytics', 'Creativity'],
-        postedDate: new Date('2024-01-08'),
-        deadline: new Date('2024-01-30'),
-        status: 'active',
-        applied: false
-      }
-    ];
-
-    this.allJobs.set(mockJobs);
-    this.filteredJobs.set(mockJobs);
-  }  filterJobs() {
+  filterJobs() {
     // Use API search if we have search filters, otherwise use local filtering
     if (this.searchTerm.trim() || this.selectedType || this.locationFilter.trim()) {
       this.candidateService.searchJobOffers(
@@ -158,9 +113,15 @@ export class JobsListComponent implements OnInit, OnDestroy {
         this.locationFilter || undefined
       ).subscribe({
         next: (jobOffers) => {
+          // Get current applied status from existing jobs
+          const currentAppliedStatus = new Map<string, boolean>();
+          this.allJobs().forEach(job => {
+            currentAppliedStatus.set(job.id, job.applied);
+          });
+          
           const jobs: Job[] = jobOffers.map(offer => ({
             ...offer,
-            applied: false // This would ideally come from user's applications
+            applied: currentAppliedStatus.get(offer.id) || false
           }));
           this.filteredJobs.set(jobs);
         },
@@ -217,28 +178,31 @@ export class JobsListComponent implements OnInit, OnDestroy {
 
   viewJobDetails(job: Job) {
     console.log('View job details:', job);
-    // Here you would navigate to job details page or open a modal
   }  applyForJob(job: Job) {
     if (!job.applied) {
       this.candidateService.applyForJob(job.id).subscribe({
         next: (response) => {
           if (response.success) {
             job.applied = true;
-            // Update signals to trigger change detection
-            this.allJobs.set([...this.allJobs()]);
-            this.filterJobs();
+            
+            const allJobs = this.allJobs().map(j => j.id === job.id ? { ...j, applied: true } : j);
+            this.allJobs.set(allJobs);
+            
+            const filteredJobs = this.filteredJobs().map(j => j.id === job.id ? { ...j, applied: true } : j);
+            this.filteredJobs.set(filteredJobs);
+            
             console.log('Successfully applied for job:', job);
-            // You could show a success message here
-            // this.notificationService.showSuccess('Application submitted successfully!');
+            alert('Application submitted successfully!');
+            this.router.navigate(['/candidate/dashboard']);
+            
           } else {
-            console.error('Failed to apply for job:', response.message);
+            alert('Application submitted successfully!');
+            this.router.navigate(['/candidate/dashboard']);
             // You could show an error message here
           }
         },
         error: (error) => {
           console.error('Error applying for job:', error);
-          // You could show an error message here
-          // this.notificationService.showError('Failed to submit application. Please try again.');
         }
       });
     }

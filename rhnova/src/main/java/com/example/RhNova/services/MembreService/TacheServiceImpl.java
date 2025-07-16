@@ -8,6 +8,7 @@ import com.example.RhNova.model.enums.Role;
 import com.example.RhNova.model.enums.StatutTache;
 import com.example.RhNova.repositories.TacheRepository;
 import com.example.RhNova.repositories.UserRepository;
+import com.example.RhNova.repositories.ProjetRepository;
 import com.example.RhNova.util.AuthUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class TacheServiceImpl implements TacheService {
 
     private final TacheRepository tacheRepository;
     private final UserRepository userRepository;
+    private final ProjetRepository projetRepository;
     private final AuthUtil authUtil;
 
     private Tachedto toDto(Tache t) {
@@ -39,6 +41,8 @@ public class TacheServiceImpl implements TacheService {
         dto.setEvaluation(t.getEvaluation());
         dto.setCreatedById(t.getCreatedBy() != null ? t.getCreatedBy().getId() : null);
         dto.setCreatedByName(t.getCreatedBy() != null ? t.getCreatedBy().getName() : null);
+        dto.setProjetId(t.getProjet() != null ? t.getProjet().getId() : null);
+        dto.setProjetNom(t.getProjet() != null ? t.getProjet().getNom() : null);
         dto.setDateCreation(t.getDateCreation());
         dto.setLastUpdated(t.getLastUpdated());
         return dto;
@@ -55,10 +59,14 @@ public class TacheServiceImpl implements TacheService {
         if (dto.getMembreId() != null) {
             userRepository.findById(dto.getMembreId()).ifPresent(t::setMembre);
         }
+        if (dto.getProjetId() != null) {
+            projetRepository.findById(dto.getProjetId()).ifPresent(t::setProjet);
+        }
         t.setProgression(dto.getProgression() != null ? dto.getProgression() : 0);
         t.setEvaluation(dto.getEvaluation());
         t.setDateCreation(LocalDateTime.now());
         t.setLastUpdated(LocalDateTime.now());
+        t.setMembre(dto.getMembreId() != null ? userRepository.findById(dto.getMembreId()).orElse(null) : null);
         
         // Set creator if available
         User currentUser = authUtil.getCurrentUser();
@@ -120,6 +128,15 @@ public class TacheServiceImpl implements TacheService {
     }
 
     @Override
+    public List<Tachedto> getTachesByProjet(String projetId) {
+        // Find the project by ID (you'll need to inject ProjetRepository)
+        return tacheRepository.findAll().stream()
+            .filter(tache -> tache.getProjet() != null && tache.getProjet().getId().equals(projetId))
+            .map(this::toDto)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Tachedto> filterTaches(StatutTache statut, String priorite) {
         Priorite p = Priorite.valueOf(priorite);
         return tacheRepository.findByStatutAndPriorite(statut, p)
@@ -153,6 +170,7 @@ public class TacheServiceImpl implements TacheService {
     @Override
     public Tachedto createTaskByManager(Tachedto tacheDto) {
         User currentUser = authUtil.getCurrentUser();
+        System.out.println("Current user: " + (currentUser != null ? currentUser.getEmail() : "null"));
         if (currentUser == null || currentUser.getRole() != Role.MANAGER) {
             throw new RuntimeException("Seuls les managers peuvent créer des tâches");
         }

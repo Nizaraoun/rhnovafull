@@ -21,6 +21,8 @@ public class Tachedto {
     private Integer evaluation;
     private String createdById; // ID of user who created the task
     private String createdByName; // Name of user who created the task
+    private String projetId; // ID of the project this task belongs to
+    private String projetNom; // Name of the project this task belongs to
     private LocalDateTime dateCreation;
     private LocalDateTime lastUpdated;
 }

@@ -164,23 +164,7 @@
           >
             <i class="fas fa-edit"></i>
           </button>
-          <button 
-            type="button" 
-            class="btn-icon btn-icon-info" 
-            (click)="toggleJobOfferStatus(jobOffer)"
-            [title]="jobOffer.status === 'active' ? 'Désactiver' : 'Activer'"
-          >
-            <i [class]="jobOffer.status === 'active' ? 'fas fa-pause' : 'fas fa-play'"></i>
-          </button>
-          <button 
-            type="button" 
-            class="btn-icon btn-icon-warning" 
-            (click)="archiveJobOffer(jobOffer)"
-            title="Archiver l'Offre d'Emploi"
-            *ngIf="jobOffer.status === 'active'"
-          >
-            <i class="fas fa-archive"></i>
-          </button>
+         
           <button 
             type="button" 
             class="btn-icon btn-icon-danger" 

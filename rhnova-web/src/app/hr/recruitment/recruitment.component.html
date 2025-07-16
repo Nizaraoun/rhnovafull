@@ -68,7 +68,6 @@
             <th><i class="fas fa-briefcase"></i> Poste</th>
             <th><i class="fas fa-chart-line"></i> Expérience</th>
             <th><i class="fas fa-calendar"></i> Date de Candidature</th>
-            <th><i class="fas fa-info-circle"></i> Statut</th>
             <th><i class="fas fa-cog"></i> Actions</th>
           </tr>
         </thead>
@@ -107,20 +106,7 @@
               {{ candidate.appliedDate | date:'MMM dd, yyyy' }}
             </td>
             
-            <td class="status">              <select 
-                [value]="candidate.status" 
-                (change)="updateCandidateStatus(candidate, $any($event.target).value)"
-                class="status-select"
-                [ngClass]="getStatusClass(candidate.status)"
-              >
-                <option value="applied">Candidature Envoyée</option>
-                <option value="screening">Présélection</option>
-                <option value="interview">Entretien</option>
-                <option value="offer">Offre</option>
-                <option value="hired">Embauché</option>
-                <option value="rejected">Rejeté</option>
-              </select>
-            </td>
+        
             
             <td class="actions">
               <div class="action-buttons">                <button type="button" class="btn-icon btn-icon-primary" title="Voir le Profil" 

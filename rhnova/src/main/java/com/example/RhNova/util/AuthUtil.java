@@ -44,6 +44,25 @@ public class AuthUtil {
     }
 
     /**
+     * Get the email of the currently authenticated user
+     * @return The current user email or null if not authenticated
+     */
+    public String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        }
+        
+        return null;
+    }
+
+    /**
      * Check if the current user has a specific role
      * @param role The role to check
      * @return true if the user has the role, false otherwise

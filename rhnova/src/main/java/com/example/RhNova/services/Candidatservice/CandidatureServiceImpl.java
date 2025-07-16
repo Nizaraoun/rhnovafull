@@ -30,6 +30,7 @@ public class CandidatureServiceImpl implements CandidatureService {
         Candidature candidature = new Candidature();
         candidature.setDateCandidature(dto.getDateCandidature());
         candidature.setStatut(dto.getStatut());
+        candidature.setProcessed(dto.isProcessed()); // Set the boolean field
 
         User candidat = userRepository.findById(dto.getCandidatId()).orElseThrow();
         JobOffer offre = jobOfferRepository.findById(dto.getOffreId()).orElseThrow();
@@ -59,11 +60,36 @@ public class CandidatureServiceImpl implements CandidatureService {
         candidatureRepository.deleteById(id);
     }
 
+    @Override
+    public Candidaturedto updateCandidatureProcessedStatus(String id, boolean isProcessed) {
+        Candidature candidature = candidatureRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Candidature not found with id: " + id));
+        
+        candidature.setProcessed(isProcessed);
+        candidature = candidatureRepository.save(candidature);
+        
+        return convertToDTO(candidature);
+    }
+
+    @Override
+    public Candidaturedto updateCandidatureProcessedStatusByCandidatAndOffre(String candidatId, String offreId, boolean isProcessed) {
+        Candidature candidature = candidatureRepository.findByCandidatIdAndOffreId(candidatId, offreId);
+        if (candidature == null) {
+            throw new RuntimeException("Candidature not found with candidatId: " + candidatId + " and offreId: " + offreId);
+        }
+        
+        candidature.setProcessed(isProcessed);
+        candidature = candidatureRepository.save(candidature);
+        
+        return convertToDTO(candidature);
+    }
+
     private Candidaturedto convertToDTO(Candidature c) {
         Candidaturedto dto = new Candidaturedto();
         dto.setId(c.getId());
         dto.setDateCandidature(c.getDateCandidature());
         dto.setStatut(c.getStatut());
+        dto.setProcessed(c.isProcessed()); // Add the boolean field
         dto.setCandidatId(c.getCandidat().getId());
         dto.setOffreId(c.getOffre().getId());
         dto.setProfilId(c.getProfil().getId());
@@ -134,6 +160,7 @@ public class CandidatureServiceImpl implements CandidatureService {
         }
         
         return allCandidatures.stream()
+            .filter(candidature -> candidature.isProcessed()) // Only return processed candidatures
             .map(this::convertToDetailedDTO)
             .collect(Collectors.toList());
     }

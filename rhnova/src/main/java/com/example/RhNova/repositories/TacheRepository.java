@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import com.example.RhNova.model.entity.Tache;
 import com.example.RhNova.model.entity.User;
+import com.example.RhNova.model.entity.Projet;
 import com.example.RhNova.model.enums.Priorite;
 import com.example.RhNova.model.enums.StatutTache;
 
@@ -12,6 +13,7 @@ public interface TacheRepository extends MongoRepository<Tache, String> {
     List<Tache> findByMembre(User membre);
     List<Tache> findByCreatedBy(User createdBy);
     List<Tache> findByStatut(StatutTache statut);
+    List<Tache> findByProjet(Projet projet);
     @Query("{'membre.equipe.id': ?0}")
     List<Tache> findByMembre_Equipe_Id(String equipeId);
     List<Tache> findByStatutAndPriorite(StatutTache statut, Priorite priorite);

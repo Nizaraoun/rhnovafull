@@ -9,6 +9,7 @@ import java.util.List;
 public interface CandidatureRepository extends MongoRepository<Candidature, String> {
     List<Candidature> findByCandidatId(String candidatId);
     List<Candidature> findByOffreId(String offreId);
+    Candidature findByCandidatIdAndOffreId(String candidatId, String offreId); // New method
 
     // Find candidatures by multiple offer IDs
     @Query("{ 'offre.$id': { $in: ?0 } }")

@@ -9,6 +9,8 @@ public interface CandidatureService {
     List<Candidaturedto> getAllCandidatures();
     Candidaturedto getCandidatureById(String id);
     void deleteCandidature(String id);
+    Candidaturedto updateCandidatureProcessedStatus(String id, boolean isProcessed); // New update method
+    Candidaturedto updateCandidatureProcessedStatusByCandidatAndOffre(String candidatId, String offreId, boolean isProcessed); // New method
     List<Candidaturedto> getCandidaturesByCandidatId(String candidatId);
     List<Candidaturedto> getCandidaturesByOffreId(String offreId);
     List<Candidaturedto> getCandidaturesByRHId(String rhId);
