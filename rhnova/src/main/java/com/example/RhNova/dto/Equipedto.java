@@ -11,4 +11,7 @@ public class Equipedto {
     private String description;
     private String managerId;
     private List<String> membreIds;
+    private Integer nombreMembres; // Number of team members
 }
+
+    

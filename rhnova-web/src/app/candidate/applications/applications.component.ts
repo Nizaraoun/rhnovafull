@@ -15,6 +15,7 @@ interface Application {
   appliedDate: Date;
   status: 'pending' | 'interview' | 'accepted' | 'rejected';
   interviewDate?: Date;
+  heureEntretien?: string;
   interviewStatus?: StatutEntretien;
   interviewStatusLabel?: string;
   interviewLink?: string;
@@ -151,6 +152,7 @@ export class ApplicationsComponent implements OnInit {
       appliedDate: new Date(candidature.dateCandidature),
       status: frontendStatus,
       interviewDate: latestInterview ? new Date(latestInterview.dateEntretien) : undefined,
+      heureEntretien: latestInterview?.heureEntretien,
       interviewStatus: latestInterview?.statut,
       interviewStatusLabel: latestInterview ? mapStatutEntretienToLabel(latestInterview.statut) : undefined,
       interviewLink: latestInterview?.lienVisio,
@@ -200,12 +202,20 @@ export class ApplicationsComponent implements OnInit {
     return mapStatutEntretienToLabel(status);
   }
 
-  formatInterviewDate(date?: Date): string {
+  formatInterviewDate(date?: Date, heureEntretien?: string): string {
     if (!date) return '';
-    return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    
+    const dateStr = date.toLocaleDateString('fr-FR');
+    
+    // If we have a specific interview time, use it; otherwise use the date's time
+    if (heureEntretien && heureEntretien.trim()) {
+      return `${dateStr} à ${heureEntretien}`;
+    } else {
+      return dateStr + ' à ' + date.toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
   }
   hasUpcomingInterview(application: Application): boolean {
     if (!application.interviewDate || !application.interviewStatus) return false;

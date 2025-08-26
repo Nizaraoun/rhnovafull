@@ -74,7 +74,7 @@ export class ManagerDashboardComponent implements OnInit {
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       budget: [0, [Validators.required, Validators.min(0)]],
-      statut: ['A_FAIRE', Validators.required]
+      statut: ['EN_ATTENTE', Validators.required]
     });
 
     this.taskForm = this.fb.group({
@@ -606,9 +606,10 @@ export class ManagerDashboardComponent implements OnInit {
   // Helper methods for project management
   getProjectStatusClass(status: string): string {
     switch (status) {
-      case 'A_FAIRE': return 'status-pending';
+      case 'EN_ATTENTE': return 'status-pending';
+      case 'PLANIFIE': return 'status-planned';
       case 'EN_COURS': return 'status-in-progress';
-      case 'TERMINEE': return 'status-completed';
+      case 'TERMINE': return 'status-completed';
       case 'ANNULE': return 'status-cancelled';
       default: return '';
     }
@@ -616,9 +617,10 @@ export class ManagerDashboardComponent implements OnInit {
 
   getProjectStatusText(status: string): string {
     switch (status) {
-      case 'A_FAIRE': return 'Pending';
+      case 'EN_ATTENTE': return 'Pending';
+      case 'PLANIFIE': return 'Planned';
       case 'EN_COURS': return 'In Progress';
-      case 'TERMINEE': return 'Completed';
+      case 'TERMINE': return 'Completed';
       case 'ANNULE': return 'Cancelled';
       default: return status;
     }
@@ -634,7 +636,7 @@ export class ManagerDashboardComponent implements OnInit {
       this.managerService.assignProjectToTeam(project.id, this.teamDetails.id).subscribe({
         next: () => {
           project.equipeId = this.teamDetails!.id;
-          project.equipeName = this.teamDetails!.nom;
+          project.equipeNom = this.teamDetails!.nom;
           console.log('Project assigned to team successfully');
         },
         error: (error) => {

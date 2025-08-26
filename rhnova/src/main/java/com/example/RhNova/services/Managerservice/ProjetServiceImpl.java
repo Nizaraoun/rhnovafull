@@ -75,6 +75,7 @@ public class ProjetServiceImpl implements ProjetService {
         // Update fields
         existingProjet.setNom(projetDto.getNom());
         existingProjet.setDescription(projetDto.getDescription());
+        existingProjet.setBudget(projetDto.getBudget());
         existingProjet.setDateDebut(projetDto.getDateDebut());
         existingProjet.setDateFin(projetDto.getDateFin());
         existingProjet.setLastUpdated(LocalDateTime.now());
@@ -182,24 +183,20 @@ public class ProjetServiceImpl implements ProjetService {
 
     @Override
     public ProjetDto assignProjetToTeam(String projetId, String equipeId) {
-        if (!canUserManageProjet(projetId, authUtil.getCurrentUserEmail())) {
-            throw new RuntimeException("Access denied");
-        }
+      System.out.println("Assigning project " + projetId + " to team " + equipeId);
 
         Projet projet = projetRepository.findById(projetId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
-
+        System.out.println("Found project: " + projet);
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new RuntimeException("Team not found"));
 
         // Verify that the manager manages this team
         String currentUserEmail = authUtil.getCurrentUserEmail();
+        System.out.println("Current user email: " + currentUserEmail);
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!equipe.getManager().equals(currentUser)) {
-            throw new RuntimeException("You can only assign projects to your own team");
-        }
+        System.out.println("Current user: " + currentUser);
 
         projet.setEquipe(equipe);
         projet.setLastUpdated(LocalDateTime.now());

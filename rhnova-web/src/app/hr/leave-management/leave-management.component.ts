@@ -101,7 +101,6 @@ export class LeaveManagementComponent implements OnInit {
   private leaveService = inject(LeaveManagementService);  ngOnInit() {
     // Debug JWT token
     
-    // Test API connectivity first
     
     this.loadLeaveRequests();
     // this.loadStats();

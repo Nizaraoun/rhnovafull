@@ -25,8 +25,6 @@ export class EmployeesComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
-  departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations'];
-  positions = ['Manager', 'Senior Developer', 'Junior Developer', 'Analyst', 'Specialist'];
   constructor(
     private fb: FormBuilder,
     public employeeApiService: EmployeeApiService
@@ -41,12 +39,12 @@ export class EmployeesComponent implements OnInit {
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
       department: ['', Validators.required],
       position: ['', Validators.required],
       salary: ['', [Validators.required, Validators.min(0)]],
-      joinDate: ['', Validators.required],
-      manager: ['']
+      phoneNumber: ['', Validators.required],
+      address: ['', Validators.required],
+      joinDate: ['', Validators.required]
     });
   }
 
@@ -56,7 +54,7 @@ export class EmployeesComponent implements OnInit {
   }
 
   getActiveEmployeesCount(): number {
-    return this.employees.filter(employee => employee.status === 'active').length;
+    return this.employees.filter(employee => employee.status === 'active' || !employee.status).length;
   }
 
   getOnLeaveEmployeesCount(): number {
@@ -66,25 +64,39 @@ export class EmployeesComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
     
+    console.log('Loading employees from API...');
     this.employeeApiService.getAllEmployees().subscribe({
       next: (employees) => {
+        console.log('Employees loaded from API:', employees);
         this.employees = employees.map(emp => ({
           ...emp,
-          joinDate: new Date(emp.joinDate)
+          joinDate: new Date(emp.joinDate),
+          status: emp.status || 'active' // Default status if not provided
         }));
         this.filteredEmployees = [...this.employees];
         this.isLoading = false;
-        
-        // Log dynamic cURL commands for the first employee (if any)
-        
+        console.log('Processed employees:', this.employees);
       },
       error: (error) => {
         console.error('Error loading employees:', error);
-        this.error = 'Failed to load employees. Using mock data instead.';
+        this.error = 'Failed to load employees. Please refresh the page or try again.';
         this.isLoading = false;
+        
+        // Initialize with empty arrays to prevent further errors
+        this.employees = [];
+        this.filteredEmployees = [];
       }
     });
   }
+
+  /**
+   * Refresh employee list from server
+   */
+  refreshEmployees() {
+    this.loadEmployees();
+  }
+
+
 
   setupSearchSubscription() {
     this.searchForm.valueChanges.subscribe(filters => {
@@ -93,6 +105,9 @@ export class EmployeesComponent implements OnInit {
   }
 
   filterEmployees(filters: any) {
+    console.log('Filtering employees with filters:', filters);
+    console.log('Total employees before filtering:', this.employees.length);
+    
     this.filteredEmployees = this.employees.filter(employee => {
       const matchesSearch = !filters.searchTerm || 
         employee.firstName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
@@ -100,16 +115,33 @@ export class EmployeesComponent implements OnInit {
         employee.email.toLowerCase().includes(filters.searchTerm.toLowerCase());
 
       const matchesDepartment = !filters.department || employee.department === filters.department;
-      const matchesStatus = !filters.status || employee.status === filters.status;
+      const matchesStatus = !filters.status || employee.status === filters.status || (!employee.status && filters.status === 'active');
 
       return matchesSearch && matchesDepartment && matchesStatus;
     });
+    
+    console.log('Filtered employees count:', this.filteredEmployees.length);
+    console.log('Filtered employees:', this.filteredEmployees);
   }
 
   openAddModal() {
     this.showAddModal = true;
     this.editingEmployee = null;
+    this.error = null; // Clear any previous errors
     this.employeeForm.reset();
+    
+    // Ensure form is properly reset with empty values
+    this.employeeForm.patchValue({
+      firstName: '',
+      lastName: '',
+      email: '',
+      department: '',
+      position: '',
+      salary: '',
+      phoneNumber: '',
+      address: '',
+      joinDate: ''
+    });
   }
 
   editEmployee(employee: Employee) {
@@ -119,12 +151,12 @@ export class EmployeesComponent implements OnInit {
       firstName: employee.firstName,
       lastName: employee.lastName,
       email: employee.email,
-      phone: employee.phone,
       department: employee.department,
       position: employee.position,
       salary: employee.salary,
-      joinDate: employee.joinDate.toISOString().split('T')[0],
-      manager: employee.manager
+      phoneNumber: employee.phoneNumber,
+      address: employee.address,
+      joinDate: employee.joinDate.toISOString().split('T')[0]
     });
   }
   saveEmployee() {
@@ -136,58 +168,76 @@ export class EmployeesComponent implements OnInit {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
         email: formValue.email,
-        phone: formValue.phone,
         department: formValue.department,
         position: formValue.position,
-        status: formValue.status || 'active',
-        joinDate: formValue.joinDate,
         salary: formValue.salary,
-        skills: formValue.skills || [],
-        manager: formValue.manager || ''
+        phoneNumber: formValue.phoneNumber,
+        address: formValue.address,
+        joinDate: formValue.joinDate
       };
       
       if (this.editingEmployee) {
         // Update existing employee
+        console.log('Updating employee with data:', employeeData);
         this.employeeApiService.updateEmployee(this.editingEmployee.id, employeeData).subscribe({
           next: (updatedEmployee) => {
+            console.log('Employee updated successfully:', updatedEmployee);
             const index = this.employees.findIndex(emp => emp.id === this.editingEmployee!.id);
             if (index !== -1) {
               this.employees[index] = {
                 ...updatedEmployee,
-                joinDate: new Date(updatedEmployee.joinDate)
+                joinDate: new Date(updatedEmployee.joinDate),
+                status: updatedEmployee.status || 'active'
               };
             }
+            this.filteredEmployees = [...this.employees]; // Update filtered list immediately
             this.filterEmployees(this.searchForm.value);
             this.closeModal();
             this.isLoading = false;
+            console.log('Updated employees list:', this.employees);
             
-            // Log updated cURL commands
-            
+            // Show success message
+            this.error = null;
           },
           error: (error) => {
             console.error('Error updating employee:', error);
-            this.error = 'Failed to update employee';
+            this.error = 'Failed to update employee. Please try again.';
             this.isLoading = false;
           }
         });
       } else {
         // Add new employee
+        console.log('Creating new employee with data:', employeeData);
         this.employeeApiService.createEmployee(employeeData).subscribe({
           next: (newEmployee) => {
+            console.log('Employee created successfully:', newEmployee);
             const employee = {
               ...newEmployee,
-              joinDate: new Date(newEmployee.joinDate)
+              joinDate: new Date(newEmployee.joinDate),
+              status: newEmployee.status || 'active' // Ensure status is set
             };
-            this.employees.push(employee);
-            this.filterEmployees(this.searchForm.value);
+            
+            // Try to add to local array
+            try {
+              this.employees.push(employee);
+              this.filteredEmployees = [...this.employees]; // Update filtered list immediately
+              this.filterEmployees(this.searchForm.value);
+              console.log('Updated employees list:', this.employees);
+            } catch (localError) {
+              console.error('Error updating local list, refreshing from server:', localError);
+              // If local update fails, refresh from server as fallback
+              this.refreshEmployees();
+            }
+            
             this.closeModal();
             this.isLoading = false;
             
-            // Log cURL commands for new employee
+            // Show success message
+            this.error = null;
           },
           error: (error) => {
             console.error('Error creating employee:', error);
-            this.error = 'Failed to create employee';
+            this.error = 'Failed to create employee. Please try again.';
             this.isLoading = false;
           }
         });
@@ -220,6 +270,7 @@ export class EmployeesComponent implements OnInit {
     this.showAddModal = false;
     this.editingEmployee = null;
     this.employeeForm.reset();
+    this.error = null; // Clear any previous errors
   }
 
   getStatusClass(status: string): string {
@@ -227,153 +278,7 @@ export class EmployeesComponent implements OnInit {
       case 'active': return 'status-active';
       case 'inactive': return 'status-inactive';
       case 'on-leave': return 'status-on-leave';
-      default: return '';
+      default: return 'status-active'; // Default to active if status is undefined
     }
-  }
-  exportEmployees() {
-    this.isLoading = true;
-    this.employeeApiService.exportEmployees().subscribe({
-      next: (blob) => {
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `employees_export_${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-        this.isLoading = false;
-        
-        // Log export cURL command
-       
-      },
-      error: (error) => {
-        console.error('Error exporting employees:', error);
-        this.error = 'Failed to export employees';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  importEmployees() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        this.isLoading = true;
-        this.employeeApiService.importEmployees(formData).subscribe({
-          next: (importedEmployees) => {
-            this.employees = importedEmployees.map(emp => ({
-              ...emp,
-              joinDate: new Date(emp.joinDate)
-            }));
-            this.filterEmployees(this.searchForm.value);
-            this.isLoading = false;
-            
-            // Log import cURL command
-          },
-          error: (error) => {
-            console.error('Error importing employees:', error);
-            this.error = 'Failed to import employees';
-            this.isLoading = false;
-          }
-        });
-      }
-    };
-    input.click();
-  }
-
-  /**
-   * Generate and log dynamic cURL commands for current employee
-   */
-  
-
-  /**
-   * Test API endpoint with dynamic data
-   */
-  testApiEndpoint(employee: Employee, operation: string) {
-    switch (operation) {
-      case 'get':
-        this.employeeApiService.getEmployeeById(employee.id).subscribe({
-          next: (result) => {
-            console.log(`✅ GET Employee ${employee.id}:`, result);
-          },
-          error: (error) => console.error(`❌ GET Employee failed:`, error)
-        });
-        break;
-        
-      case 'deactivate':
-        this.employeeApiService.deactivateEmployee(employee.id).subscribe({
-          next: (result) => {
-            console.log(`✅ Deactivated Employee ${employee.id}:`, result);
-            // Update local data
-            const index = this.employees.findIndex(emp => emp.id === employee.id);
-            if (index !== -1) {
-              this.employees[index] = { ...result, joinDate: new Date(result.joinDate) };
-              this.filterEmployees(this.searchForm.value);
-            }
-          },
-          error: (error) => console.error(`❌ Deactivate Employee failed:`, error)
-        });
-        break;
-        
-      case 'activate':
-        this.employeeApiService.activateEmployee(employee.id).subscribe({
-          next: (result) => {
-            console.log(`✅ Activated Employee ${employee.id}:`, result);
-            // Update local data
-            const index = this.employees.findIndex(emp => emp.id === employee.id);
-            if (index !== -1) {
-              this.employees[index] = { ...result, joinDate: new Date(result.joinDate) };              this.filterEmployees(this.searchForm.value);
-            }
-          },
-          error: (error) => console.error(`❌ Activate Employee failed:`, error)
-        });
-        break;
-    }
-  }
-
-  /**
-   * Search employees by department using API
-   */
-  searchByDepartment(department: string) {
-    this.isLoading = true;
-    this.employeeApiService.getEmployeesByDepartment(department).subscribe({
-      next: (employees) => {
-        this.filteredEmployees = employees.map(emp => ({
-          ...emp,
-          joinDate: new Date(emp.joinDate)
-        }));
-        this.isLoading = false;
-        
-        // Log search cURL command
-        console.log(`🔍 Search by department cURL:`, 
-          `curl -X GET "${this.employeeApiService['baseUrl']}/api/hr/employees?department=${department}" -H "Authorization: Bearer ${localStorage.getItem('auth_token')}"`);
-      },
-      error: (error) => {
-        console.error('Error searching by department:', error);
-        this.isLoading = false;
-      }
-    });
-  }
-
-  /**
-   * Get employee statistics with dynamic cURL logging
-   */
-  getStatistics() {
-    this.employeeApiService.getEmployeeStatistics().subscribe({
-      next: (stats) => {
-        console.log('📊 Employee Statistics:', stats);
-        
-        // Log statistics cURL command
-        console.log(`📈 Statistics cURL:`, 
-          `curl -X GET "${this.employeeApiService['baseUrl']}/api/hr/employees/statistics" -H "Authorization: Bearer ${localStorage.getItem('auth_token')}"`);
-      },
-      error: (error) => console.error('Error getting statistics:', error)
-    });
   }
 }

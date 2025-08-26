@@ -16,6 +16,7 @@ public class ProjetMapper {
         dto.setId(projet.getId());
         dto.setNom(projet.getNom());
         dto.setDescription(projet.getDescription());
+        dto.setBudget(projet.getBudget());
         dto.setDateDebut(projet.getDateDebut());
         dto.setDateFin(projet.getDateFin());
         dto.setStatut(projet.getStatut());
@@ -47,6 +48,7 @@ public class ProjetMapper {
         projet.setId(dto.getId());
         projet.setNom(dto.getNom());
         projet.setDescription(dto.getDescription());
+        projet.setBudget(dto.getBudget());
         projet.setDateDebut(dto.getDateDebut());
         projet.setDateFin(dto.getDateFin());
         projet.setStatut(dto.getStatut());

@@ -3,8 +3,14 @@
     <div class="header-content">
       <h1 class="page-title">Gestion des Employés</h1>
       <p class="page-subtitle">Gérez efficacement votre main-d'œuvre</p>
-    </div><div class="header-actions">
-        <button type="button" class="btn btn-primary" (click)="openAddModal()">
+    </div>
+    <div class="header-actions">
+     
+      <button type="button" class="btn btn-outline" (click)="refreshEmployees()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt"></i>
+        Actualiser
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openAddModal()">
         <i class="fas fa-plus"></i>
         Ajouter un Employé
       </button>
@@ -43,9 +49,28 @@
         <i class="fas fa-building"></i>
       </div>
       <div class="stat-content">
-        <h3>{{ departments.length }}</h3>
+        <h3>6</h3>
         <p>Départements</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-banner">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+      <button type="button" class="btn-close" (click)="error = null">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <div class="loading-content">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Chargement en cours...</span>
     </div>
   </div>
 
@@ -63,7 +88,12 @@
         <div class="filter-field">
         <select formControlName="department" class="form-select">
           <option value="">Tous les Départements</option>
-          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+          <option value="HR">HR</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Sales">Sales</option>
+          <option value="Finance">Finance</option>
+          <option value="Operations">Operations</option>
         </select>
       </div>
       
@@ -108,7 +138,7 @@
             </div>
             <div class="contact-item">
               <i class="fas fa-phone"></i>
-              <span>{{ employee.phone }}</span>
+              <span>{{ employee.phoneNumber }}</span>
             </div>
           </td>
           
@@ -119,8 +149,8 @@
           <td class="position">{{ employee.position }}</td>
           
           <td class="status">
-            <span class="status-badge" [ngClass]="getStatusClass(employee.status)">
-              {{ employee.status | titlecase }}
+            <span class="status-badge" [ngClass]="getStatusClass(employee.status || 'active')">
+              {{ (employee.status || 'active') | titlecase }}
             </span>
           </td>
           
@@ -215,35 +245,22 @@
               formControlName="email"
               class="form-input"
               [class.error]="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched"
-            />            <div class="error-message" *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched">
+            />
+            <div class="error-message" *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched">
               Un email valide est requis
             </div>
           </div>
           
           <div class="form-group">
-            <label for="phone">Téléphone *</label>
-            <input 
-              type="tel" 
-              id="phone"
-              formControlName="phone"
-              class="form-input"
-              [class.error]="employeeForm.get('phone')?.invalid && employeeForm.get('phone')?.touched"
-            />
-            <div class="error-message" *ngIf="employeeForm.get('phone')?.invalid && employeeForm.get('phone')?.touched">
-              Le numéro de téléphone est requis
-            </div>
-          </div>
-            <div class="form-group">
             <label for="department">Département *</label>
-            <select 
+            <input 
+              type="text" 
               id="department"
               formControlName="department"
-              class="form-select"
+              class="form-input"
+              placeholder="Ex: Marketing, HR, Engineering..."
               [class.error]="employeeForm.get('department')?.invalid && employeeForm.get('department')?.touched"
-            >
-              <option value="">Sélectionner un Département</option>
-              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-            </select>
+            />
             <div class="error-message" *ngIf="employeeForm.get('department')?.invalid && employeeForm.get('department')?.touched">
               Le département est requis
             </div>
@@ -251,20 +268,20 @@
           
           <div class="form-group">
             <label for="position">Poste *</label>
-            <select 
+            <input 
+              type="text" 
               id="position"
               formControlName="position"
-              class="form-select"
+              class="form-input"
+              placeholder="Ex: Marketing Manager, Developer..."
               [class.error]="employeeForm.get('position')?.invalid && employeeForm.get('position')?.touched"
-            >
-              <option value="">Sélectionner un Poste</option>
-              <option *ngFor="let pos of positions" [value]="pos">{{ pos }}</option>
-            </select>
+            />
             <div class="error-message" *ngIf="employeeForm.get('position')?.invalid && employeeForm.get('position')?.touched">
               Le poste est requis
             </div>
           </div>
-            <div class="form-group">
+          
+          <div class="form-group">
             <label for="salary">Salaire *</label>
             <input 
               type="number" 
@@ -272,10 +289,41 @@
               formControlName="salary"
               class="form-input"
               min="0"
+              step="0.01"
               [class.error]="employeeForm.get('salary')?.invalid && employeeForm.get('salary')?.touched"
             />
             <div class="error-message" *ngIf="employeeForm.get('salary')?.invalid && employeeForm.get('salary')?.touched">
               Un salaire valide est requis
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phoneNumber">Téléphone *</label>
+            <input 
+              type="tel" 
+              id="phoneNumber"
+              formControlName="phoneNumber"
+              class="form-input"
+              placeholder="Ex: +1234567890"
+              [class.error]="employeeForm.get('phoneNumber')?.invalid && employeeForm.get('phoneNumber')?.touched"
+            />
+            <div class="error-message" *ngIf="employeeForm.get('phoneNumber')?.invalid && employeeForm.get('phoneNumber')?.touched">
+              Le numéro de téléphone est requis
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="address">Adresse *</label>
+            <input 
+              type="text" 
+              id="address"
+              formControlName="address"
+              class="form-input"
+              placeholder="Ex: 123 Main St, City, State 12345"
+              [class.error]="employeeForm.get('address')?.invalid && employeeForm.get('address')?.touched"
+            />
+            <div class="error-message" *ngIf="employeeForm.get('address')?.invalid && employeeForm.get('address')?.touched">
+              L'adresse est requise
             </div>
           </div>
           
@@ -291,17 +339,6 @@
             <div class="error-message" *ngIf="employeeForm.get('joinDate')?.invalid && employeeForm.get('joinDate')?.touched">
               La date d'embauche est requise
             </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="manager">Responsable</label>
-            <input 
-              type="text" 
-              id="manager"
-              formControlName="manager"
-              class="form-input"
-              placeholder="Optionnel"
-            />
           </div>
         </div>
       </form>

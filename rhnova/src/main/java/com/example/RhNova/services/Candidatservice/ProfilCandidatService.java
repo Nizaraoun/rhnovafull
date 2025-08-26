@@ -90,4 +90,35 @@ public class ProfilCandidatService {
 
         return profil.getPhoto();
     }
+
+    // ✅ Récupération de l'image de profil
+    public byte[] getProfilePicture(String userId) throws IOException {
+        Profil profil = getProfil(userId);
+        
+        if (profil.getPhoto() == null || profil.getPhoto().isEmpty()) {
+            throw new RuntimeException("Aucune photo de profil trouvée pour cet utilisateur");
+        }
+
+        // Récupérer le nom du fichier depuis l'URL stockée
+        String photoUrl = profil.getPhoto();
+        String filename = photoUrl.substring(photoUrl.lastIndexOf('/') + 1);
+        
+        Path filePath = Paths.get(UPLOAD_DIR).resolve(filename);
+        
+        if (!Files.exists(filePath)) {
+            throw new RuntimeException("Fichier image non trouvé sur le serveur");
+        }
+
+        return Files.readAllBytes(filePath);
+    }
+
+    // ✅ Vérifier si l'utilisateur a une photo de profil
+    public boolean hasProfilePicture(String userId) {
+        try {
+            Profil profil = getProfil(userId);
+            return profil.getPhoto() != null && !profil.getPhoto().isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

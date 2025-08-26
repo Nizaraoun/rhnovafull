@@ -89,7 +89,7 @@
             <div class="timeline-dot"></div>            <div class="timeline-content">
               <div class="timeline-title">Entretien</div>
               <div class="timeline-date" *ngIf="app.interviewDate">
-                {{ formatInterviewDate(app.interviewDate) }}
+                {{ formatInterviewDate(app.interviewDate, app.heureEntretien) }}
               </div>
               <div class="interview-status" *ngIf="app.interviewStatus">
                 <span class="status-badge" [class]="'interview-status-' + app.interviewStatus">
@@ -121,7 +121,7 @@
               </div>
               <div class="interview-details">
                 <div class="interview-datetime">
-                  {{ formatInterviewDate(app.interviewDate) }}
+                  {{ formatInterviewDate(app.interviewDate, app.heureEntretien) }}
                 </div>
                 <div class="interview-location" *ngIf="app.interviewLocation">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">

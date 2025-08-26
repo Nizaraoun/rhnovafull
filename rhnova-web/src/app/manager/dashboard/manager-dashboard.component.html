@@ -175,9 +175,7 @@
                       <i class="fas fa-plus"></i>
                     </i>
                   </button>
-                  <button class="btn-icon" title="View Profile" (click)="viewMemberDetails(member)">
-                    <i class="fas fa-user"></i>
-                  </button>
+                 
                 </div>
               </div>
               
@@ -287,9 +285,9 @@
                 <i class="fas fa-euro-sign"></i>
                 {{ project.budget | currency:'EUR':'symbol':'1.0-0' }}
               </span>
-              <span class="project-team" *ngIf="project.equipeName">
+              <span class="project-team" *ngIf="project.equipeNom">
                 <i class="fas fa-users"></i>
-                {{ project.equipeName }}
+                {{ project.equipeNom }}
               </span>
               <span class="project-due-date">
                 <i class="fas fa-calendar"></i>
@@ -427,15 +425,16 @@
       
       <div class="form-row">
         <div class="form-group">
-          <label for="budget">Budget (€)</label>
+          <label for="budget">Budget (TND)</label>
           <input type="number" id="budget" formControlName="budget" min="0" />
         </div>
         <div class="form-group">
           <label for="statut">Statut</label>
           <select id="statut" formControlName="statut">
-            <option value="A_FAIRE">En Attente</option>
+            <option value="EN_ATTENTE">En Attente</option>
+            <option value="PLANIFIE">Planifié</option>
             <option value="EN_COURS">En Cours</option>
-            <option value="TERMINEE">Terminé</option>
+            <option value="TERMINE">Terminé</option>
             <option value="ANNULE">Annulé</option>
           </select>
         </div>

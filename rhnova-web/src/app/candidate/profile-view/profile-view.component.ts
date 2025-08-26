@@ -49,6 +49,7 @@ export class ProfileViewComponent implements OnInit {
       next: (profile) => {
         this.currentProfile.set(profile);
         this.isLoading.set(false);
+        console.log('Profile loaded:', profile);
       },
       error: (error) => {
         this.error.set('Profile not found or error loading profile');
@@ -124,5 +125,37 @@ export class ProfileViewComponent implements OnInit {
 
     const filledFields = fields.filter(field => field && field !== '').length;
     return Math.round((filledFields / fields.length) * 100);
+  }
+
+  getProfileImageUrl(): string {
+    const profile = this.currentProfile();
+    if (!profile) return '';
+    
+    // Handle both photoUrl (from ProfileDto) and photo (from backend response)
+    const photoPath = (profile as any).photoUrl || (profile as any).photo;
+    if (!photoPath) return '';
+    
+    // Use the API endpoint to get the image
+    const baseUrl = 'http://localhost:8080';
+    const apiUrl = `${baseUrl}/api/profil/image?url=${encodeURIComponent(photoPath)}`;
+    
+    return apiUrl;
+  }
+
+  onImageError(event: any): void {
+    console.error('Error loading profile image:', event);
+    // Optionally hide the image or show a default avatar
+    event.target.style.display = 'none';
+  }
+
+  getProfileName(): string {
+    const profile = this.currentProfile();
+    if (!profile) return 'Profil';
+    
+    // Handle different name properties that might come from backend
+    return (profile as any).candidat?.name || 
+           (profile as any).name || 
+           profile.userId || 
+           'Profil';
   }
 }

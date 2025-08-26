@@ -32,10 +32,7 @@
       class="team-card">
       <div class="team-header">        <div class="team-info">
           <h3>{{ team.nom }}</h3>
-          <p class="members-count">
-            <i class="fas fa-users"></i>
-            {{ getMemberCount(team) }} membre(s)
-          </p>        </div>
+            </div>
       </div>
 
       <div class="team-description" *ngIf="team.description">
@@ -121,7 +118,7 @@
           <label for="managerId">Manager *</label>
           <select id="managerId" formControlName="managerId" class="form-select">
             <option value="">Sélectionner un manager</option>
-            <option *ngFor="let user of allUsers" [value]="user.id">
+            <option *ngFor="let user of getManagerUsers()" [value]="user.id">
               {{ user.name }} ({{ user.email }})
             </option>
           </select>

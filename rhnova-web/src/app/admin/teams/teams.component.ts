@@ -73,6 +73,7 @@ export class TeamsComponent implements OnInit {
         this.teams = teams;
         this.filteredTeams = this.teams;
         this.isLoading = false;
+        console.log('Teams loaded:', this.teams);
       },
       error: (error: any) => {
         console.error('Error loading teams:', error);
@@ -240,6 +241,10 @@ export class TeamsComponent implements OnInit {
     }
   }  getManagerName(team: Team): string {
     return team.manager ? team.manager.name : 'Non assigné';
+  }
+
+  getManagerUsers(): UserDto[] {
+    return this.allUsers.filter(user => user.role === Role.MANAGER);
   }
 
   canJoinTeam(user: UserDto): boolean {

@@ -42,16 +42,18 @@ export interface Project {
   description: string;
   dateDebut: string;
   dateFin: string;
-  budget: number;
-  statut: 'A_FAIRE' | 'EN_COURS' | 'TERMINEE' | 'ANNULE';
+  budget: string;
+  statut: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE' | 'EN_ATTENTE';
   progression: number;
   managerId: string;
   managerName: string;
   equipeId?: string;
-  equipeName?: string;
+  equipeNom?: string;
+  taches?: ManagerTask[] | null;
+  nombreTaches?: number | null;
+  tachesCompletes?: number | null;
   dateCreation: string;
   lastUpdated: string;
-  tasks?: ManagerTask[];
 }
 
 export interface CreateProjectRequest {
@@ -59,8 +61,8 @@ export interface CreateProjectRequest {
   description: string;
   dateDebut: string;
   dateFin: string;
-  budget: number;
-  statut: 'A_FAIRE' | 'EN_COURS' | 'TERMINEE' | 'ANNULE';
+  budget: string;
+  statut: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE' | 'EN_ATTENTE';
 }
 
 export interface TeamMember {

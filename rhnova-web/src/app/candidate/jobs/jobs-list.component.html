@@ -151,3 +151,125 @@
     </div>
   </div>
 </div>
+
+<!-- Job Details Modal -->
+<div class="modal-overlay" [class.show]="showJobDetailsModal" *ngIf="showJobDetailsModal" (click)="closeJobDetailsModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedJobForDetails">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h2>{{ selectedJobForDetails.title }}</h2>
+        <div class="job-company-location">
+          <span class="company">{{ selectedJobForDetails.department }}</span>
+          <span class="location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ selectedJobForDetails.location }}
+          </span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeJobDetailsModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="job-overview">
+        <div class="job-badges">
+          <span class="job-type-badge" [class]="'type-' + selectedJobForDetails.type">
+            {{ selectedJobForDetails.type | titlecase }}
+          </span>
+          <span class="status-badge" [class]="'status-' + selectedJobForDetails.status">
+            {{ selectedJobForDetails.status | titlecase }}
+          </span>
+        </div>
+
+        <div class="job-meta-info">
+          <div class="meta-item" *ngIf="selectedJobForDetails.salary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <div class="meta-content">
+              <span class="meta-label">Salaire</span>
+              <span class="meta-value">{{ selectedJobForDetails.salary }}TND / an</span>
+            </div>
+          </div>
+          
+          <div class="meta-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div class="meta-content">
+              <span class="meta-label">Date de publication</span>
+              <span class="meta-value">{{ selectedJobForDetails.postedDate | date:'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+          
+          <div class="meta-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6"/>
+            </svg>
+            <div class="meta-content">
+              <span class="meta-label">Date limite</span>
+              <span class="meta-value">{{ selectedJobForDetails.deadline | date:'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+          
+          <div class="meta-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <div class="meta-content">
+              <span class="meta-label">Candidats</span>
+              <span class="meta-value">{{ selectedJobForDetails.applicants || 0 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-description-section">
+        <h3>Description du poste</h3>
+        <div class="description-content">
+          <p>{{ selectedJobForDetails.description }}</p>
+        </div>
+      </div>
+
+      <div class="job-requirements-section" *ngIf="selectedJobForDetails.requirements && selectedJobForDetails.requirements.length > 0">
+        <h3>Compétences requises</h3>
+        <div class="requirements-list">
+          <span 
+            *ngFor="let requirement of selectedJobForDetails.requirements" 
+            class="requirement-tag"
+          >
+            {{ requirement }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeJobDetailsModal()">
+        Fermer
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="applyForJob(selectedJobForDetails)"
+        [disabled]="selectedJobForDetails.applied"
+      >
+        {{ selectedJobForDetails.applied ? 'Déjà postulé' : 'Postuler maintenant' }}
+      </button>
+    </div>
+  </div>
+</div>

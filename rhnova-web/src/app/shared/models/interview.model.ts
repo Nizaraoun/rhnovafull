@@ -14,6 +14,7 @@ export interface InterviewDto {
   statut: StatutEntretien;
   heureDebut?: string;
   heureFin?: string;
+  heureEntretien?: string;
   lieu?: string;
   lienVisio?: string;
   type?: 'TECHNIQUE' | 'RH' | 'COMPORTEMENTAL' | 'DIRECTION' | 'TELEPHONIQUE';
@@ -35,6 +36,7 @@ export interface InterviewDisplay {
   statusLabel: string;
   heureDebut?: string;
   heureFin?: string;
+  heureEntretien?: string;
   lieu?: string;
   typeEntretien?: string;
   commentaires?: string;

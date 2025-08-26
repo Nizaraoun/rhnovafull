@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, signal, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -26,6 +26,11 @@ export class JobsListComponent implements OnInit, OnDestroy {
   filteredJobs = signal<Job[]>([]);
   isLoading = signal(true);
   isLoadingAppliedJobs = signal(false);
+  
+  // Modal properties
+  showJobDetailsModal = false;
+  selectedJobForDetails: Job | null = null;
+  
   private searchSubject = new Subject<string>();
 
   constructor(
@@ -177,7 +182,21 @@ export class JobsListComponent implements OnInit, OnDestroy {
   }
 
   viewJobDetails(job: Job) {
-    console.log('View job details:', job);
+    this.selectedJobForDetails = job;
+    this.showJobDetailsModal = true;
+    console.log('Viewing job details:', job);
+  }
+
+  closeJobDetailsModal() {
+    this.showJobDetailsModal = false;
+    this.selectedJobForDetails = null;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent) {
+    if (this.showJobDetailsModal) {
+      this.closeJobDetailsModal();
+    }
   }  applyForJob(job: Job) {
     if (!job.applied) {
       this.candidateService.applyForJob(job.id).subscribe({
@@ -185,24 +204,36 @@ export class JobsListComponent implements OnInit, OnDestroy {
           if (response.success) {
             job.applied = true;
             
+            // Update the job in both arrays
             const allJobs = this.allJobs().map(j => j.id === job.id ? { ...j, applied: true } : j);
             this.allJobs.set(allJobs);
             
             const filteredJobs = this.filteredJobs().map(j => j.id === job.id ? { ...j, applied: true } : j);
             this.filteredJobs.set(filteredJobs);
             
+            // Update the selected job if it's the same one
+            if (this.selectedJobForDetails && this.selectedJobForDetails.id === job.id) {
+              this.selectedJobForDetails = { ...this.selectedJobForDetails, applied: true };
+            }
+            
             console.log('Successfully applied for job:', job);
             alert('Application submitted successfully!');
+            
+            // Close modal if open
+            if (this.showJobDetailsModal) {
+              this.closeJobDetailsModal();
+            }
+            
             this.router.navigate(['/candidate/dashboard']);
             
           } else {
             alert('Application submitted successfully!');
             this.router.navigate(['/candidate/dashboard']);
-            // You could show an error message here
           }
         },
         error: (error) => {
           console.error('Error applying for job:', error);
+          alert('Une erreur est survenue lors de la candidature. Veuillez réessayer.');
         }
       });
     }

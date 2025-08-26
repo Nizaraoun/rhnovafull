@@ -4,7 +4,20 @@
     <!-- Modal Header -->
     <div class="modal-header">
       <div class="candidate-header-info">        <div class="candidate-avatar">
-
+          <div class="avatar-container">
+            <img 
+              *ngIf="getCandidateImageUrl(); else defaultAvatar"
+              [src]="getCandidateImageUrl()" 
+              [alt]="candidate?.name + ' Profile Photo'"
+              class="avatar-image"
+              (error)="onImageError($event)"
+            />
+            <ng-template #defaultAvatar>
+              <div class="default-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+            </ng-template>
+          </div>
         </div>
         <div class="candidate-basic">
           <h2 class="candidate-name">{{ candidate?.name }}</h2>

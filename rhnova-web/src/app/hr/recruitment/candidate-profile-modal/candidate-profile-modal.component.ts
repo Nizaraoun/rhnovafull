@@ -86,4 +86,21 @@ export class CandidateProfileModalComponent implements OnInit {
       default: return status;
     }
   }
+
+  getCandidateImageUrl(): string {
+    if (!this.candidate?.profileData?.photo) return '';
+    
+    const photoPath = this.candidate.profileData.photo;
+    // Use the same API endpoint as in the profile view component
+    const baseUrl = 'http://localhost:8080';
+    const apiUrl = `${baseUrl}/api/profil/image?url=${encodeURIComponent(photoPath)}`;
+    
+    return apiUrl;
+  }
+
+  onImageError(event: any): void {
+    console.error('Error loading candidate image:', event);
+    // Hide the image on error
+    event.target.style.display = 'none';
+  }
 }

@@ -9,256 +9,7 @@ import { ManagerService, Project, CreateProjectRequest, CreateTaskRequest, Manag
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './manager-projects.component.html',
-  styles: [`
-    .projects-container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-    
-    .header h2 {
-      color: #2c3e50;
-      margin: 0;
-    }
-    
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.2s ease;
-    }
-    
-    .btn-primary {
-      background: #3498db;
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background: #2980b9;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .stat-card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      border: 1px solid #e1e8ed;
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-    }
-    
-    .modal.show {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
-    .status-pending { color: #f39c12; font-weight: bold; }
-    .status-in-progress { color: #3498db; font-weight: bold; }
-    .status-completed { color: #27ae60; font-weight: bold; }
-    .status-cancelled { color: #e74c3c; font-weight: bold; }
-    
-    /* Task management styles */
-    .task-item {
-      border: 1px solid #e1e8ed;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-      background: white;
-    }
-    
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    
-    .task-header h4 {
-      margin: 0;
-      color: #2c3e50;
-    }
-    
-    .task-badges {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-    
-    .badge.status-pending { background: #fff3cd; color: #856404; }
-    .badge.status-in-progress { background: #cce5ff; color: #004085; }
-    .badge.status-completed { background: #d4edda; color: #155724; }
-    
-    .badge.priority-high { background: #f8d7da; color: #721c24; }
-    .badge.priority-medium { background: #fff3cd; color: #856404; }
-    .badge.priority-low { background: #d1ecf1; color: #0c5460; }
-    
-    .task-description {
-      color: #6c757d;
-      margin-bottom: 12px;
-    }
-    
-    .task-meta {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 12px;
-      font-size: 14px;
-    }
-    
-    .meta-item {
-      color: #6c757d;
-    }
-    
-    .meta-item strong {
-      color: #2c3e50;
-    }
-    
-    .progress-bar {
-      width: 100%;
-      height: 6px;
-      background: #e9ecef;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: #28a745;
-      transition: width 0.3s ease;
-    }
-    
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 500;
-      color: #2c3e50;
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
-    }
-    
-    .error {
-      color: #e74c3c;
-      font-size: 12px;
-      margin-top: 4px;
-    }
-    
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-      color: #6c757d;
-    }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #6c757d;
-    }
-    
-    .tasks-list {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    
-    .btn-close {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #6c757d;
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .btn-close:hover {
-      color: #2c3e50;
-    }
-  `]
+  styleUrls: ['./manager-projects.component.scss']
 })
 export class ManagerProjectsComponent implements OnInit {
   projects: Project[] = [];
@@ -290,18 +41,17 @@ export class ManagerProjectsComponent implements OnInit {
     private managerService: ManagerService
   ) {
     this.projectForm = this.fb.group({
-      nom: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
+      nom: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
-      budget: [0, [Validators.required, Validators.min(0)]],
-      statut: ['A_FAIRE', Validators.required]
+      budget: ['', [Validators.required]],
+      statut: ['EN_ATTENTE', Validators.required]
     });
     
-    // Add task form
     this.taskForm = this.fb.group({
-      titre: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
+      titre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       priorite: ['MOYENNE', Validators.required],
@@ -319,8 +69,10 @@ export class ManagerProjectsComponent implements OnInit {
     this.isLoading = true;
     this.managerService.getMyProjects().subscribe({
       next: (projects) => {
+        console.log('Loaded projects:', projects); // Debug log
         this.projects = projects;
         this.filteredProjects = [...this.projects];
+        console.log('Filtered projects:', this.filteredProjects); // Debug log
         this.isLoading = false;
       },
       error: (error) => {
@@ -346,38 +98,9 @@ export class ManagerProjectsComponent implements OnInit {
   }
 
   private loadMockProjects(): void {
-    // Mock data fallback
+    // Mock data fallback with more realistic data
     this.projects = [
-      {
-        id: '1',
-        nom: 'RH Nova Web Application',
-        description: 'Development of the main HR management web application',
-        dateDebut: '2025-01-01',
-        dateFin: '2025-06-30',
-        budget: 150000,
-        statut: 'EN_COURS',
-        progression: 65,
-        managerId: 'manager1',
-        managerName: 'Jean Dupont',
-        equipeId: 'team1',
-        equipeName: 'Development Team',
-        dateCreation: '2025-01-01',
-        lastUpdated: new Date().toISOString()
-      },
-      {
-        id: '2',
-        nom: 'Mobile App Development',
-        description: 'Development of the mobile application for RH Nova',
-        dateDebut: '2025-02-01',
-        dateFin: '2025-08-31',
-        budget: 100000,
-        statut: 'A_FAIRE',
-        progression: 0,
-        managerId: 'manager1',
-        managerName: 'Jean Dupont',
-        dateCreation: '2025-01-15',
-        lastUpdated: new Date().toISOString()
-      }
+    
     ];
     this.filteredProjects = [...this.projects];
   }
@@ -396,8 +119,8 @@ export class ManagerProjectsComponent implements OnInit {
   openCreateModal(): void {
     this.projectForm.reset();
     this.projectForm.patchValue({
-      statut: 'A_FAIRE',
-      budget: 0
+      statut: 'EN_ATTENTE',
+      budget: ''
     });
     this.showCreateModal = true;
   }
@@ -436,7 +159,6 @@ export class ManagerProjectsComponent implements OnInit {
     this.selectedProject = null;
   }
 
-  // New task management methods
   openCreateTaskModal(project: Project): void {
     this.selectedProject = project;
     this.taskForm.reset();
@@ -453,25 +175,6 @@ export class ManagerProjectsComponent implements OnInit {
     this.taskForm.reset();
   }
 
-  createTaskInProject(): void {
-    if (this.taskForm.valid && this.selectedProject) {
-      const taskData: CreateTaskRequest = this.taskForm.value;
-      
-      this.managerService.createTaskInProject(this.selectedProject.id, taskData).subscribe({
-        next: (task) => {
-          console.log('Task created successfully:', task);
-          this.closeCreateTaskModal();
-          // Optionally reload project tasks or update the UI
-          this.loadProjectTasks(this.selectedProject!.id);
-        },
-        error: (error) => {
-          console.error('Error creating task:', error);
-          // Handle error (show toast, etc.)
-        }
-      });
-    }
-  }
-
   openProjectTasksModal(project: Project): void {
     this.selectedProject = project;
     this.showProjectTasksModal = true;
@@ -482,6 +185,35 @@ export class ManagerProjectsComponent implements OnInit {
     this.showProjectTasksModal = false;
     this.selectedProject = null;
     this.selectedProjectTasks = [];
+  }
+
+  createTaskInProject(): void {
+    if (this.taskForm.valid && this.selectedProject) {
+      const formData = this.taskForm.value;
+      
+      // Basic date validation
+      if (new Date(formData.dateFin) <= new Date(formData.dateDebut)) {
+        alert('Task end date must be after start date');
+        return;
+      }
+
+      const taskData: CreateTaskRequest = formData;
+      
+      this.managerService.createTaskInProject(this.selectedProject.id, taskData).subscribe({
+        next: (task) => {
+          console.log('Task created successfully:', task);
+          this.closeCreateTaskModal();
+          // Optionally reload project tasks or update the UI
+          this.loadProjectTasks(this.selectedProject!.id);
+        },
+        error: (error) => {
+          console.error('Error creating task:', error);
+          alert('Error creating task. Please try again.');
+        }
+      });
+    } else {
+      this.markFormGroupTouched(this.taskForm);
+    }
   }
 
   loadProjectTasks(projectId: string): void {
@@ -503,6 +235,13 @@ export class ManagerProjectsComponent implements OnInit {
   createProject(): void {
     if (this.projectForm.valid) {
       const formData = this.projectForm.value;
+      
+      // Basic date validation
+      if (new Date(formData.dateFin) <= new Date(formData.dateDebut)) {
+        alert('End date must be after start date');
+        return;
+      }
+
       const createRequest: CreateProjectRequest = {
         nom: formData.nom,
         description: formData.description,
@@ -517,18 +256,28 @@ export class ManagerProjectsComponent implements OnInit {
           this.projects.push(createdProject);
           this.applyFilters();
           this.closeCreateModal();
+          console.log('Project created successfully');
         },
         error: (error) => {
           console.error('Error creating project:', error);
-          // Handle error - show toast or alert
+          alert('Error creating project. Please try again.');
         }
       });
+    } else {
+      this.markFormGroupTouched(this.projectForm);
     }
   }
 
   updateProject(): void {
     if (this.projectForm.valid && this.selectedProject) {
       const formData = this.projectForm.value;
+      
+      // Basic date validation
+      if (new Date(formData.dateFin) <= new Date(formData.dateDebut)) {
+        alert('End date must be after start date');
+        return;
+      }
+
       const updateRequest: Partial<CreateProjectRequest> = {
         nom: formData.nom,
         description: formData.description,
@@ -546,25 +295,29 @@ export class ManagerProjectsComponent implements OnInit {
           }
           this.applyFilters();
           this.closeEditModal();
+          console.log('Project updated successfully');
         },
         error: (error) => {
           console.error('Error updating project:', error);
-          // Handle error - show toast or alert
+          alert('Error updating project. Please try again.');
         }
       });
+    } else {
+      this.markFormGroupTouched(this.projectForm);
     }
   }
 
   deleteProject(projectId: string): void {
-    if (confirm('Are you sure you want to delete this project?')) {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       this.managerService.deleteProject(projectId).subscribe({
         next: () => {
           this.projects = this.projects.filter(p => p.id !== projectId);
           this.applyFilters();
+          console.log('Project deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting project:', error);
-          // Handle error - show toast or alert
+          alert('Error deleting project. Please try again.');
         }
       });
     }
@@ -578,7 +331,7 @@ export class ManagerProjectsComponent implements OnInit {
           const project = this.projects.find(p => p.id === this.selectedProject!.id);
           if (project) {
             project.equipeId = this.teamDetails!.id;
-            project.equipeName = this.teamDetails!.nom;
+            project.equipeNom = this.teamDetails!.nom;
           }
           this.closeAssignTeamModal();
         },
@@ -646,9 +399,10 @@ export class ManagerProjectsComponent implements OnInit {
   // Utility methods
   getStatusClass(status: string): string {
     switch (status) {
-      case 'A_FAIRE': return 'status-pending';
+      case 'EN_ATTENTE': return 'status-pending';
+      case 'PLANIFIE': return 'status-planned';
       case 'EN_COURS': return 'status-in-progress';
-      case 'TERMINEE': return 'status-completed';
+      case 'TERMINE': return 'status-completed';
       case 'ANNULE': return 'status-cancelled';
       default: return '';
     }
@@ -656,9 +410,10 @@ export class ManagerProjectsComponent implements OnInit {
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'A_FAIRE': return 'Pending';
+      case 'EN_ATTENTE': return 'Pending';
+      case 'PLANIFIE': return 'Planned';
       case 'EN_COURS': return 'In Progress';
-      case 'TERMINEE': return 'Completed';
+      case 'TERMINE': return 'Completed';
       case 'ANNULE': return 'Cancelled';
       default: return status;
     }
@@ -673,7 +428,7 @@ export class ManagerProjectsComponent implements OnInit {
   }
 
   getTotalBudget(): number {
-    return this.projects.reduce((total, project) => total + project.budget, 0);
+    return this.projects.reduce((total, project) => total + parseFloat(project.budget || '0'), 0);
   }
 
   getAverageProgression(): number {
@@ -685,7 +440,7 @@ export class ManagerProjectsComponent implements OnInit {
   isOverdue(project: Project): boolean {
     const today = new Date();
     const dueDate = new Date(project.dateFin);
-    return dueDate < today && project.statut !== 'TERMINEE';
+    return dueDate < today && project.statut !== 'TERMINE';
   }
 
   getDaysUntilDue(project: Project): number {
@@ -696,8 +451,11 @@ export class ManagerProjectsComponent implements OnInit {
     return diffDays;
   }
 
-  navigateToProjectTasks(projectId: string): void {
-    // Navigate to a dedicated project tasks page if needed
-    // this.router.navigate(['/manager/projects', projectId, 'tasks']);
+  // Helper method to mark all form controls as touched for validation
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+    });
   }
 }

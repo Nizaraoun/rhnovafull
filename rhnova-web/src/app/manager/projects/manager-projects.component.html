@@ -1,9 +1,15 @@
 <div class="projects-container">
-  <div class="header">
-    <h2>My Projects</h2>
-    <button class="btn btn-primary" (click)="openCreateModal()">
-      <i class="fas fa-plus"></i> New Project
-    </button>
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>My Projects</h1>
+        <p class="header-subtitle">Manage and track your project portfolio</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i>
+        <span>New Project</span>
+      </button>
+    </div>
   </div>
 
   <!-- Statistics Cards -->
@@ -33,7 +39,7 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <div class="stat-content">
-        <h3>{{ getProjectCount('TERMINEE') }}</h3>
+        <h3>{{ getProjectCount('TERMINE') }}</h3>
         <p>Completed</p>
       </div>
     </div>
@@ -63,70 +69,91 @@
     
     <select [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()">
       <option value="all">All Status</option>
-      <option value="A_FAIRE">Pending</option>
+      <option value="EN_ATTENTE">Pending</option>
+      <option value="PLANIFIE">Planned</option>
       <option value="EN_COURS">In Progress</option>
-      <option value="TERMINEE">Completed</option>
+      <option value="TERMINE">Completed</option>
       <option value="ANNULE">Cancelled</option>
     </select>
   </div>
 
   <!-- Projects List -->
-  <div class="projects-list" *ngIf="!isLoading">
-    <div class="project-card" *ngFor="let project of filteredProjects">
-      <div class="project-header">
-        <h3>{{ project.nom }}</h3>
-        <div class="project-actions">
-          <button class="btn btn-sm btn-outline" (click)="openEditModal(project)" title="Edit Project">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-sm btn-outline" (click)="openProjectTasksModal(project)" title="View Project Tasks">
-            <i class="fas fa-tasks"></i>
-          </button>
-          <button class="btn btn-sm btn-outline" (click)="openCreateTaskModal(project)" title="Create Task">
-            <i class="fas fa-plus"></i>
-          </button>
-          <button class="btn btn-sm btn-outline" (click)="openAssignTeamModal(project)" title="Assign Team">
-            <i class="fas fa-users"></i>
-          </button>
-          <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id)" title="Delete Project">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-      
-      <p class="project-description">{{ project.description }}</p>
-      
-      <div class="project-info">
-        <div class="info-item">
-          <strong>Status:</strong>
-          <span [class]="getStatusClass(project.statut)">{{ getStatusText(project.statut) }}</span>
-        </div>
-        <div class="info-item">
-          <strong>Budget:</strong>
-          <span>{{ project.budget | currency:'EUR':'symbol':'1.0-0' }}</span>
-        </div>
-        <div class="info-item">
-          <strong>Team:</strong>
-          <span>{{ project.equipeName || 'Not assigned' }}</span>
-        </div>
-        <div class="info-item">
-          <strong>Due Date:</strong>
-          <span [class]="{ 'overdue': isOverdue(project) }">
-            {{ project.dateFin | date:'short' }}
-            <span *ngIf="isOverdue(project)" class="overdue-badge">OVERDUE</span>
+  <div class="projects-grid" *ngIf="!isLoading">
+    <div class="project-card enhanced-project-card" *ngFor="let project of filteredProjects">
+      <div class="card-header">
+        <div class="project-title-row">
+          <h3>{{ project.nom }}</h3>
+          <span class="status-badge" [class]="'status-' + project.statut.toLowerCase().replace('_', '-')">
+            <i class="fas fa-circle"></i>
+            {{ getStatusText(project.statut) }}
           </span>
         </div>
-      </div>
-      
-      <div class="project-progress">
-        <div class="progress-header">
-          <span>Progress: {{ project.progression }}%</span>
-          <button class="btn btn-sm btn-link" (click)="updateProjectProgression(project.id)">
-            <i class="fas fa-sync"></i> Update
-          </button>
+        <div class="project-meta">
+          <div class="meta-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ project.dateFin | date:'MMM dd, yyyy' }}</span>
+          </div>
+          <div class="meta-item" *ngIf="project.equipeNom">
+            <i class="fas fa-users"></i>
+            <span>{{ project.equipeNom }}</span>
+          </div>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="project.progression"></div>
+      </div>
+
+      <div class="card-body">
+        <p class="project-description">{{ project.description }}</p>
+        
+        <div class="project-info-grid">
+          <div class="info-item">
+            <span class="label">Budget</span>
+            <span class="value">{{ project.budget | currency:'EUR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Team</span>
+            <span class="value" [class]="{'team-name': project.equipeNom}">{{ project.equipeNom || 'Not assigned' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Tasks</span>
+            <span class="value">{{ project.nombreTaches || 0 }} total</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Due Date</span>
+            <span class="value" [class]="{ 'overdue': isOverdue(project) }">
+              {{ project.dateFin | date:'short' }}
+              <span *ngIf="isOverdue(project)" class="overdue-badge">OVERDUE</span>
+            </span>
+          </div>
+        </div>
+        
+        <div class="project-progress">
+          <div class="progress-header">
+            <span>Progress: {{ project.progression }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="project.progression"></div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" (click)="openCreateTaskModal(project)" title="Add Task">
+            <i class="fas fa-plus"></i>
+            <span>Add Task</span>
+          </button>
+          <button class="btn btn-secondary" (click)="openProjectTasksModal(project)" title="View Tasks">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks</span>
+          </button>
+          <button class="btn btn-secondary" (click)="openAssignTeamModal(project)" title="Assign Team">
+            <i class="fas fa-users"></i>
+            <span>Team</span>
+          </button>
+          <button class="btn btn-warning" (click)="openEditModal(project)" title="Edit">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+          </button>
+          <button class="btn btn-danger" (click)="deleteProject(project.id)" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -148,265 +175,404 @@
 </div>
 
 <!-- Create Project Modal -->
-<div class="modal" [class.show]="showCreateModal" *ngIf="showCreateModal">
+<div class="modal enhanced-modal" [class.show]="showCreateModal" *ngIf="showCreateModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Create New Project</h3>
-      <button class="btn btn-close" (click)="closeCreateModal()">×</button>
+      <div class="modal-title">
+        <i class="fas fa-plus-circle"></i>
+        <span>Create New Project</span>
+      </div>
+      <button class="btn-close" (click)="closeCreateModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
-    <form [formGroup]="projectForm" (ngSubmit)="createProject()" class="modal-body">
-      <div class="form-group">
-        <label for="nom">Project Name</label>
-        <input 
-          type="text" 
-          id="nom" 
-          formControlName="nom" 
-          placeholder="Enter project name"
-        />
-        <div class="error" *ngIf="projectForm.get('nom')?.errors?.['required'] && projectForm.get('nom')?.touched">
-          Project name is required
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea 
-          id="description" 
-          formControlName="description" 
-          rows="3"
-          placeholder="Enter project description"
-        ></textarea>
-        <div class="error" *ngIf="projectForm.get('description')?.errors?.['required'] && projectForm.get('description')?.touched">
-          Description is required
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="dateDebut">Start Date</label>
-          <input type="date" id="dateDebut" formControlName="dateDebut" />
-        </div>
-        <div class="form-group">
-          <label for="dateFin">End Date</label>
-          <input type="date" id="dateFin" formControlName="dateFin" />
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="budget">Budget (€)</label>
-          <input type="number" id="budget" formControlName="budget" min="0" />
-        </div>
-        <div class="form-group">
-          <label for="statut">Status</label>
-          <select id="statut" formControlName="statut">
-            <option value="A_FAIRE">Pending</option>
-            <option value="EN_COURS">In Progress</option>
-            <option value="TERMINEE">Completed</option>
-            <option value="ANNULE">Cancelled</option>
-          </select>
+    <form [formGroup]="projectForm" (ngSubmit)="createProject()">
+      <div class="modal-body">
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Project Information
+          </h4>
+          
+          <div class="form-group">
+            <label for="nom">Project Name *</label>
+            <input 
+              type="text" 
+              id="nom" 
+              formControlName="nom" 
+              placeholder="Enter project name"
+              class="form-control"
+            />
+            <div class="error" *ngIf="projectForm.get('nom')?.touched && projectForm.get('nom')?.errors">
+              <div *ngIf="projectForm.get('nom')?.errors?.['required']">Project name is required</div>
+              <div *ngIf="projectForm.get('nom')?.errors?.['minlength']">Project name must be at least 3 characters</div>
+              <div *ngIf="projectForm.get('nom')?.errors?.['maxlength']">Project name cannot exceed 100 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea 
+              id="description" 
+              formControlName="description" 
+              rows="4"
+              placeholder="Enter project description"
+              class="form-control"
+            ></textarea>
+            <div class="error" *ngIf="projectForm.get('description')?.touched && projectForm.get('description')?.errors">
+              <div *ngIf="projectForm.get('description')?.errors?.['required']">Description is required</div>
+              <div *ngIf="projectForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</div>
+              <div *ngIf="projectForm.get('description')?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dateDebut">Start Date *</label>
+              <input type="date" id="dateDebut" formControlName="dateDebut" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="dateFin">End Date *</label>
+              <input type="date" id="dateFin" formControlName="dateFin" class="form-control" />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="budget">Budget (TND) *</label>
+              <input type="number" id="budget" formControlName="budget" min="0" step="100" class="form-control" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label for="statut">Status</label>
+              <select id="statut" formControlName="statut" class="form-control">
+                <option value="EN_ATTENTE">Pending</option>
+                <option value="PLANIFIE">Planned</option>
+                <option value="EN_COURS">In Progress</option>
+                <option value="TERMINE">Completed</option>
+                <option value="ANNULE">Cancelled</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
       
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!projectForm.valid">Create Project</button>
+        <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+        <button type="submit" class="btn btn-success" [disabled]="!projectForm.valid">
+          <i class="fas fa-check"></i>
+          <span>Create Project</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Edit Project Modal -->
-<div class="modal" [class.show]="showEditModal" *ngIf="showEditModal">
+<div class="modal enhanced-modal" [class.show]="showEditModal" *ngIf="showEditModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Edit Project</h3>
-      <button class="btn btn-close" (click)="closeEditModal()">×</button>
+      <div class="modal-title">
+        <i class="fas fa-edit"></i>
+        <span>Edit Project</span>
+      </div>
+      <button class="btn-close" (click)="closeEditModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
-    <form [formGroup]="projectForm" (ngSubmit)="updateProject()" class="modal-body">
-      <div class="form-group">
-        <label for="edit-nom">Project Name</label>
-        <input 
-          type="text" 
-          id="edit-nom" 
-          formControlName="nom" 
-          placeholder="Enter project name"
-        />
-      </div>
-      
-      <div class="form-group">
-        <label for="edit-description">Description</label>
-        <textarea 
-          id="edit-description" 
-          formControlName="description" 
-          rows="3"
-          placeholder="Enter project description"
-        ></textarea>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="edit-dateDebut">Start Date</label>
-          <input type="date" id="edit-dateDebut" formControlName="dateDebut" />
-        </div>
-        <div class="form-group">
-          <label for="edit-dateFin">End Date</label>
-          <input type="date" id="edit-dateFin" formControlName="dateFin" />
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="edit-budget">Budget (€)</label>
-          <input type="number" id="edit-budget" formControlName="budget" min="0" />
-        </div>
-        <div class="form-group">
-          <label for="edit-statut">Status</label>
-          <select id="edit-statut" formControlName="statut">
-            <option value="A_FAIRE">Pending</option>
-            <option value="EN_COURS">In Progress</option>
-            <option value="TERMINEE">Completed</option>
-            <option value="ANNULE">Cancelled</option>
-          </select>
+    <form [formGroup]="projectForm" (ngSubmit)="updateProject()">
+      <div class="modal-body">
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Project Information
+          </h4>
+          
+          <div class="form-group">
+            <label for="edit-nom">Project Name *</label>
+            <input 
+              type="text" 
+              id="edit-nom" 
+              formControlName="nom" 
+              placeholder="Enter project name"
+              class="form-control"
+            />
+            <div class="error" *ngIf="projectForm.get('nom')?.touched && projectForm.get('nom')?.errors">
+              <div *ngIf="projectForm.get('nom')?.errors?.['required']">Project name is required</div>
+              <div *ngIf="projectForm.get('nom')?.errors?.['minlength']">Project name must be at least 3 characters</div>
+              <div *ngIf="projectForm.get('nom')?.errors?.['maxlength']">Project name cannot exceed 100 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-description">Description *</label>
+            <textarea 
+              id="edit-description" 
+              formControlName="description" 
+              rows="4"
+              placeholder="Enter project description"
+              class="form-control"
+            ></textarea>
+            <div class="error" *ngIf="projectForm.get('description')?.touched && projectForm.get('description')?.errors">
+              <div *ngIf="projectForm.get('description')?.errors?.['required']">Description is required</div>
+              <div *ngIf="projectForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</div>
+              <div *ngIf="projectForm.get('description')?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-dateDebut">Start Date *</label>
+              <input type="date" id="edit-dateDebut" formControlName="dateDebut" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="edit-dateFin">End Date *</label>
+              <input type="date" id="edit-dateFin" formControlName="dateFin" class="form-control" />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-budget">Budget (TND) *</label>
+              <input type="number" id="edit-budget" formControlName="budget" min="0" step="100" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label for="edit-statut">Status</label>
+              <select id="edit-statut" formControlName="statut" class="form-control">
+                <option value="EN_ATTENTE">Pending</option>
+                <option value="PLANIFIE">Planned</option>
+                <option value="EN_COURS">In Progress</option>
+                <option value="TERMINE">Completed</option>
+                <option value="ANNULE">Cancelled</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
       
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!projectForm.valid">Update Project</button>
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!projectForm.valid">
+          <i class="fas fa-save"></i>
+          <span>Update Project</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Assign Team Modal -->
-<div class="modal" [class.show]="showAssignTeamModal" *ngIf="showAssignTeamModal">
+<div class="modal enhanced-modal" [class.show]="showAssignTeamModal" *ngIf="showAssignTeamModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Assign Team to Project</h3>
-      <button class="btn btn-close" (click)="closeAssignTeamModal()">×</button>
+      <div class="modal-title">
+        <i class="fas fa-users"></i>
+        <span>Assign Team to Project</span>
+      </div>
+      <button class="btn-close" (click)="closeAssignTeamModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
     <div class="modal-body">
-      <div *ngIf="teamDetails" class="team-info">
-        <h4>{{ teamDetails.nom }}</h4>
-        <p>{{ teamDetails.description }}</p>
-        <p><strong>Members:</strong> {{ teamDetails.nombreMembres || teamDetails.membres?.length || 0 }}</p>
-      </div>
-      
-      <div *ngIf="!teamDetails" class="no-team">
-        <p>No team found. Please make sure you have a team assigned to your account.</p>
+      <div class="form-section">
+        <h4 class="section-title">
+          <i class="fas fa-project-diagram"></i>
+          Project: {{ selectedProject?.nom }}
+        </h4>
+        
+        <div *ngIf="teamDetails" class="team-card">
+          <div class="team-header">
+            <div class="team-info">
+              <h4>{{ teamDetails.nom }}</h4>
+              <div class="team-stats">
+                <span class="stat-item">
+                  <i class="fas fa-users"></i>
+                  {{ teamDetails.nombreMembres || teamDetails.membres.length || 0 }} members
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="team-description" *ngIf="teamDetails.description">
+            <p>{{ teamDetails.description }}</p>
+          </div>
+          
+          <div class="members-section" *ngIf="teamDetails.membres && teamDetails.membres.length > 0">
+            <h5 class="members-title">
+              <i class="fas fa-user-friends"></i>
+              Team Members
+            </h5>
+            <div class="members-grid">
+              <div class="member-card" *ngFor="let member of teamDetails.membres">
+                <div class="member-avatar">
+                  <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="member-info">
+                  <span class="member-name">{{ member.name }}</span>
+                  <small class="member-role">{{ member.role }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="!teamDetails" class="empty-team-state">
+          <div class="empty-icon">
+            <i class="fas fa-users-slash"></i>
+          </div>
+          <h4>No Team Found</h4>
+          <p>You don't have a team assigned to your account. Please contact your administrator to assign a team before you can assign it to projects.</p>
+        </div>
       </div>
     </div>
     
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeAssignTeamModal()">Cancel</button>
+      <button type="button" class="btn btn-secondary" (click)="closeAssignTeamModal()">
+        <i class="fas fa-times"></i>
+        <span>Cancel</span>
+      </button>
       <button 
         type="button" 
-        class="btn btn-primary" 
+        class="btn btn-success" 
         (click)="assignTeamToProject()"
-        [disabled]="!teamDetails"
+        [disabled]="!teamDetails || !selectedProject"
       >
-        Assign Team
+        <i class="fas fa-check"></i>
+        <span>Assign Team</span>
       </button>
     </div>
   </div>
 </div>
 
 <!-- Create Task Modal -->
-<div class="modal" [class.show]="showCreateTaskModal" *ngIf="showCreateTaskModal">
+<div class="modal enhanced-modal" [class.show]="showCreateTaskModal" *ngIf="showCreateTaskModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Create Task in {{ selectedProject?.nom }}</h3>
-      <button class="btn btn-close" (click)="closeCreateTaskModal()">×</button>
+      <div class="modal-title">
+        <i class="fas fa-plus-circle"></i>
+        <span>Create Task in {{ selectedProject?.nom }}</span>
+      </div>
+      <button class="btn-close" (click)="closeCreateTaskModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
-    <form [formGroup]="taskForm" (ngSubmit)="createTaskInProject()" class="modal-body">
-      <div class="form-group">
-        <label for="task-title">Task Title</label>
-        <input 
-          type="text" 
-          id="task-title" 
-          formControlName="titre" 
-          placeholder="Enter task title"
-          class="form-control"
-        />
-        <div class="error" *ngIf="taskForm.get('titre')?.errors?.['required'] && taskForm.get('titre')?.touched">
-          Task title is required
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label for="task-description">Description</label>
-        <textarea 
-          id="task-description" 
-          formControlName="description" 
-          placeholder="Enter task description"
-          class="form-control"
-          rows="3"
-        ></textarea>
-        <div class="error" *ngIf="taskForm.get('description')?.errors?.['required'] && taskForm.get('description')?.touched">
-          Task description is required
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="task-dateDebut">Start Date</label>
-          <input 
-            type="date" 
-            id="task-dateDebut" 
-            formControlName="dateDebut" 
-            class="form-control"
-          />
-        </div>
-        <div class="form-group">
-          <label for="task-dateFin">End Date</label>
-          <input 
-            type="date" 
-            id="task-dateFin" 
-            formControlName="dateFin" 
-            class="form-control"
-          />
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="task-priorite">Priority</label>
-          <select id="task-priorite" formControlName="priorite" class="form-control">
-            <option value="BASSE">Low</option>
-            <option value="MOYENNE">Medium</option>
-            <option value="HAUTE">High</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="task-assignee">Assign to</label>
-          <select id="task-assignee" formControlName="assigneeId" class="form-control">
-            <option value="">Select team member</option>
-            <option *ngFor="let member of teamMembers" [value]="member.id">
-              {{ member.name }} ({{ member.role }})
-            </option>
-          </select>
+    <form [formGroup]="taskForm" (ngSubmit)="createTaskInProject()">
+      <div class="modal-body">
+        <div class="form-section">
+          <h4 class="section-title">
+            <i class="fas fa-tasks"></i>
+            Task Information
+          </h4>
+          
+          <div class="form-group">
+            <label for="task-title">Task Title *</label>
+            <input 
+              type="text" 
+              id="task-title" 
+              formControlName="titre" 
+              placeholder="Enter task title"
+              class="form-control"
+            />
+            <div class="error" *ngIf="taskForm.get('titre')?.touched && taskForm.get('titre')?.errors">
+              <div *ngIf="taskForm.get('titre')?.errors?.['required']">Task title is required</div>
+              <div *ngIf="taskForm.get('titre')?.errors?.['minlength']">Task title must be at least 3 characters</div>
+              <div *ngIf="taskForm.get('titre')?.errors?.['maxlength']">Task title cannot exceed 100 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="task-description">Description *</label>
+            <textarea 
+              id="task-description" 
+              formControlName="description" 
+              placeholder="Enter task description"
+              class="form-control"
+              rows="4"
+            ></textarea>
+            <div class="error" *ngIf="taskForm.get('description')?.touched && taskForm.get('description')?.errors">
+              <div *ngIf="taskForm.get('description')?.errors?.['required']">Task description is required</div>
+              <div *ngIf="taskForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</div>
+              <div *ngIf="taskForm.get('description')?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-dateDebut">Start Date *</label>
+              <input 
+                type="date" 
+                id="task-dateDebut" 
+                formControlName="dateDebut" 
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label for="task-dateFin">End Date *</label>
+              <input 
+                type="date" 
+                id="task-dateFin" 
+                formControlName="dateFin" 
+                class="form-control"
+              />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-priorite">Priority</label>
+              <select id="task-priorite" formControlName="priorite" class="form-control">
+                <option value="BASSE">Low</option>
+                <option value="MOYENNE">Medium</option>
+                <option value="HAUTE">High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-assignee">Assign to</label>
+              <select id="task-assignee" formControlName="assigneeId" class="form-control">
+                <option value="">Select team member</option>
+                <option *ngFor="let member of teamMembers" [value]="member.id">
+                  {{ member.name }} ({{ member.role }})
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
       
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeCreateTaskModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!taskForm.valid">Create Task</button>
+        <button type="button" class="btn btn-secondary" (click)="closeCreateTaskModal()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!taskForm.valid">
+          <i class="fas fa-check"></i>
+          <span>Create Task</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Project Tasks Modal -->
-<div class="modal" [class.show]="showProjectTasksModal" *ngIf="showProjectTasksModal">
-  <div class="modal-content">
+<div class="modal enhanced-modal" [class.show]="showProjectTasksModal" *ngIf="showProjectTasksModal">
+  <div class="modal-content large-modal">
     <div class="modal-header">
-      <h3>Tasks for {{ selectedProject?.nom }}</h3>
-      <button class="btn btn-close" (click)="closeProjectTasksModal()">×</button>
+      <div class="modal-title">
+        <i class="fas fa-tasks"></i>
+        <span>Tasks for {{ selectedProject?.nom }}</span>
+      </div>
+      <button class="btn-close" (click)="closeProjectTasksModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
     <div class="modal-body">
@@ -416,51 +582,78 @@
       </div>
       
       <div *ngIf="!isLoadingTasks && selectedProjectTasks.length > 0" class="tasks-list">
-        <div class="task-item" *ngFor="let task of selectedProjectTasks">
+        <div class="task-card" *ngFor="let task of selectedProjectTasks">
           <div class="task-header">
-            <h4>{{ task.titre }}</h4>
-            <div class="task-badges">
-              <span class="badge" [class]="getTaskStatusClass(task.statut)">
-                {{ getTaskStatusText(task.statut) }}
-              </span>
-              <span class="badge" [class]="getTaskPriorityClass(task.priorite)">
-                {{ getTaskPriorityText(task.priorite) }}
-              </span>
+            <div class="task-title-section">
+              <h4>{{ task.titre }}</h4>
+              <div class="task-badges">
+                <span class="status-badge" [class]="'status-' + task.statut.toLowerCase().replace('_', '-')">
+                  <i class="fas fa-circle"></i>
+                  {{ getTaskStatusText(task.statut) }}
+                </span>
+                <span class="priority-badge" [class]="'priority-' + task.priorite.toLowerCase()">
+                  <i class="fas fa-flag"></i>
+                  {{ getTaskPriorityText(task.priorite) }}
+                </span>
+              </div>
             </div>
           </div>
           
           <p class="task-description">{{ task.description }}</p>
           
-          <div class="task-meta">
+          <div class="task-meta-grid">
             <div class="meta-item">
-              <strong>Assigned to:</strong> {{ task.membreName || 'Unassigned' }}
+              <i class="fas fa-user"></i>
+              <div class="meta-content">
+                <span class="meta-label">Assigned to</span>
+                <span class="meta-value">{{ task.membreName || 'Unassigned' }}</span>
+              </div>
             </div>
             <div class="meta-item">
-              <strong>Due Date:</strong> {{ task.dateFin | date:'short' }}
+              <i class="fas fa-calendar-check"></i>
+              <div class="meta-content">
+                <span class="meta-label">Due Date</span>
+                <span class="meta-value">{{ task.dateFin | date:'MMM dd, yyyy' }}</span>
+              </div>
             </div>
             <div class="meta-item">
-              <strong>Progress:</strong> {{ task.progression }}%
+              <i class="fas fa-chart-line"></i>
+              <div class="meta-content">
+                <span class="meta-label">Progress</span>
+                <span class="meta-value">{{ task.progression || 0 }}%</span>
+              </div>
             </div>
           </div>
           
-          <div class="progress-bar" *ngIf="task.statut !== 'TERMINEE'">
-            <div class="progress-fill" [style.width.%]="task.progression"></div>
+          <div class="task-progress" *ngIf="task.statut !== 'TERMINEE'">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="task.progression || 0"></div>
+            </div>
           </div>
         </div>
       </div>
       
       <div *ngIf="!isLoadingTasks && selectedProjectTasks.length === 0" class="empty-state">
-        <p>No tasks found for this project.</p>
+        <div class="empty-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <h4>No Tasks Found</h4>
+        <p>This project doesn't have any tasks yet. Create the first task to get started.</p>
         <button class="btn btn-primary" (click)="openCreateTaskModal(selectedProject!)">
-          Create First Task
+          <i class="fas fa-plus"></i>
+          <span>Create First Task</span>
         </button>
       </div>
     </div>
     
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeProjectTasksModal()">Close</button>
+      <button type="button" class="btn btn-secondary" (click)="closeProjectTasksModal()">
+        <i class="fas fa-times"></i>
+        <span>Close</span>
+      </button>
       <button type="button" class="btn btn-primary" (click)="openCreateTaskModal(selectedProject!)">
-        Add New Task
+        <i class="fas fa-plus"></i>
+        <span>Add New Task</span>
       </button>
     </div>
   </div>

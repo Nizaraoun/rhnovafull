@@ -27,10 +27,7 @@ export const MANAGER_ROUTES: Routes = [
     path: 'leave-requests',
     loadComponent: () => import('./leave-requests/leave-requests.component').then(c => c.LeaveRequestsComponent)
   },
-  {
-    path: 'team-overview',
-    loadComponent: () => import('./team-overview/team-overview.component').then(c => c.TeamOverviewComponent)
-  },
+
   {
     path: 'manager-team',
     loadComponent: () => import('./teams/manager-teams.component').then(c => c.ManagerTeamsComponent)

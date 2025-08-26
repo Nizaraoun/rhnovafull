@@ -23,6 +23,8 @@ public class Projet {
 
     private String description;
 
+    private String budget;
+
     private LocalDate dateDebut;
 
     private LocalDate dateFin;

@@ -12,6 +12,7 @@ public class ProjetDto {
     private String id;
     private String nom;
     private String description;
+    private String budget;
     private LocalDate dateDebut;
     private LocalDate dateFin;
     private StatutProjet statut;

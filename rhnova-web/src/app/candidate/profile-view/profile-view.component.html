@@ -4,6 +4,20 @@
     <!-- Profile Header -->
     <div class="profile-header">
       <div class="profile-photo">
+        <div class="profile-image-container">
+          <img 
+            *ngIf="getProfileImageUrl(); else defaultAvatar"
+            [src]="getProfileImageUrl()" 
+            [alt]="getProfileName() + ' Profile Photo'"
+            class="profile-image"
+            (error)="onImageError($event)"
+          />
+          <ng-template #defaultAvatar>
+            <div class="default-avatar">
+              <i class="icon-user"></i>
+            </div>
+          </ng-template>
+        </div>
         
         <div class="profile-completion" *ngIf="showActions">
           <div class="completion-circle" [style.--completion]="getProfileCompleteness() + '%'">
@@ -14,7 +28,7 @@
       </div>
       
       <div class="profile-basic-info">        <h1 class="profile-name">
-          {{ currentProfile()?.userId || 'Profil' }}
+          {{ getProfileName() }}
         </h1>
         <h2 class="profile-title" *ngIf="currentProfile()?.profession">
           {{ currentProfile()?.profession }}

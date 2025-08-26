@@ -74,6 +74,20 @@
         <tbody>
           <tr *ngFor="let candidate of filteredCandidates" class="candidate-row">            <td class="candidate-info">
               <div class="candidate-details">
+                <div class="candidate-avatar-small">
+                  <img 
+                    *ngIf="getCandidateImageUrl(candidate); else smallDefaultAvatar"
+                    [src]="getCandidateImageUrl(candidate)" 
+                    [alt]="candidate.name + ' Photo'"
+                    class="avatar-image-small"
+                    (error)="onImageError($event)"
+                  />
+                  <ng-template #smallDefaultAvatar>
+                    <div class="default-avatar-small">
+                      <i class="fas fa-user"></i>
+                    </div>
+                  </ng-template>
+                </div>
                 
                 <div class="candidate-text">
                   <h4 class="candidate-name">

@@ -15,10 +15,16 @@ public class EquipeMapper {
         dto.setNom(equipe.getNom());
         dto.setDescription(equipe.getDescription());
         dto.setManagerId(equipe.getManager() != null ? equipe.getManager().getId() : null);
-        dto.setMembreIds(equipe.getMembres() != null ? equipe.getMembres().stream()
+        
+        List<String> membreIds = equipe.getMembres() != null ? equipe.getMembres().stream()
                 .map(User::getId)
-                .collect(Collectors.toList()) : null);
-                System.out.println(dto);
+                .collect(Collectors.toList()) : null;
+        dto.setMembreIds(membreIds);
+        
+        // Set the number of members
+        dto.setNombreMembres(equipe.getMembres() != null ? equipe.getMembres().size() : 0);
+        
+        System.out.println(dto);
         return dto;
     }
 
